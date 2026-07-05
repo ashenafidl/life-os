@@ -5,4 +5,5 @@ export default defineConfig({
   printWidth: 80,
   singleQuote: false,
   sortImports: true,
+  sortTailwindcss: true,
 });
