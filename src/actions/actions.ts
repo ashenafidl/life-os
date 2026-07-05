@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db/drizzle";
-import { projects } from "@/db/schema";
+import { projects } from "@/db/schema/tasks";
 
 type NewProject = typeof projects.$inferInsert;
 

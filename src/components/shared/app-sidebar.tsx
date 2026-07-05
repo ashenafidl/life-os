@@ -1,11 +1,8 @@
 "use client";
 
-import { CaretUpDownIcon, ChecksIcon, Icon } from "@phosphor-icons/react";
-import { HouseIcon, KanbanIcon } from "@phosphor-icons/react";
-import { Route } from "next";
+import { CaretUpDownIcon } from "@phosphor-icons/react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
   DropdownMenu,
@@ -24,44 +21,23 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-
-interface NavItem {
-  icon: Icon;
-  label: string;
-  href: Route;
-}
-
-interface Module {
-  icon: Icon;
-  name: string;
-  description?: string;
-}
-
-const modules: Module[] = [
-  {
-    icon: ChecksIcon,
-    name: "Tasks",
-    description: "Manage your todos and tasks.",
-  },
-];
+import { modules, navItems } from "@/constants/module";
+import { useModule } from "@/hooks/use-module";
+import { Module } from "@/types/module";
 
 export default function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
 
-  const [activeModule, setActiveModule] = useState<Module>(modules[0]);
+  const { activeModule, setActiveModule } = useModule();
 
-  const items: NavItem[] = [
-    {
-      icon: HouseIcon,
-      label: "Home",
-      href: "/",
-    },
-    {
-      icon: KanbanIcon,
-      label: "Projects",
-      href: "/projects",
-    },
-  ];
+  const items = navItems[activeModule.key] ?? [];
+
+  const handleModuleChange = (module: Module) => {
+    setActiveModule(module);
+    const firstItem = navItems[module.key]?.[0];
+    if (firstItem) router.push(firstItem.href);
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -73,9 +49,9 @@ export default function AppSidebar() {
                 render={
                   <SidebarMenuButton
                     size="lg"
-                    className="bg-sidebar-accent/50 data-[state=open]:text-sidebar-accent-foreground"
+                    className="bg-primary/5 data-[state=open]:text-sidebar-accent-foreground"
                   >
-                    <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                    <div className="flex aspect-square size-8 items-center justify-center rounded-md border">
                       <activeModule.icon className="size-4" />
                     </div>
                     <div className="grid flex-1 text-left text-sm leading-tight">
@@ -104,11 +80,11 @@ export default function AppSidebar() {
                   {modules.map((module) => (
                     <DropdownMenuItem
                       key={module.name}
-                      onClick={() => setActiveModule(module)}
+                      onClick={() => handleModuleChange(module)}
                       className="gap-2 p-2"
                     >
-                      <div className="flex size-6 items-center justify-center rounded-md border">
-                        <module.icon className="size-3.5 shrink-0" />
+                      <div className="flex size-8 items-center justify-center rounded-md border">
+                        <module.icon className="size-4 shrink-0" />
                       </div>
                       <div>
                         <p>{module.name}</p>

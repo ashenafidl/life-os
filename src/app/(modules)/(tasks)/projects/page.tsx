@@ -10,7 +10,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { db } from "@/db/drizzle";
-import { projects } from "@/db/schema";
+import { projects } from "@/db/schema/tasks";
 
 export default async function ProjectsPage() {
   const allProjects = await db.select().from(projects);

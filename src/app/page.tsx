@@ -1,52 +1,47 @@
-import { format, isToday } from "date-fns";
+"use client";
 
-import { db } from "@/db/drizzle";
-import { tasks } from "@/db/schema";
-import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
-export default async function Home() {
-  const allTasks = await db.select().from(tasks);
+import { Card, CardContent } from "@/components/ui/card";
+import { modules, navItems } from "@/constants/module";
+import { useModule } from "@/hooks/use-module";
 
-  const next7Days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    return d;
-  });
+export default function Home() {
+  const router = useRouter();
+  const { setActiveModule } = useModule();
+
+  const goToModule = (moduleKey: string) => {
+    const module = modules.find((m) => m.key === moduleKey);
+    const firstItem = navItems[moduleKey]?.[0];
+    if (module) setActiveModule(module);
+    if (firstItem) router.push(firstItem.href);
+  };
 
   return (
-    <div className="grid grid-cols-7 gap-8 p-6">
-      {next7Days.map((day) => (
-        <div key={day.toISOString()}>
-          <div className="uppercase">
-            <p className="text-muted-foreground text-xs">
-              {format(day, "MMM d, yyyy")}
-            </p>
-            <p
-              className={cn(
-                "font-heading text-lg",
-                isToday(day) && "text-primary",
-              )}
-            >
-              {format(day, "EEEE")}
-            </p>
-          </div>
-
-          <div className="border-border my-2 border-t border-dashed" />
-
-          {/* Task list */}
-          <div className="flex flex-col">
-            {allTasks.map((task) => (
-              <div key={task.id} className="line-clamp-1 text-ellipsis">
-                {task.title} - {task.date}
+    <div className="flex min-h-screen items-center justify-center p-6">
+      <div className="grid w-full max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
+        {modules.map((module) => (
+          <Card
+            key={module.key}
+            onClick={() => goToModule(module.key)}
+            className="hover:border-primary hover:bg-accent hover:border-0.5 cursor-pointer border transition-all hover:-translate-y-1"
+          >
+            <CardContent className="flex h-full flex-col items-center justify-center gap-4 text-center">
+              <div className="bg-primary text-primary-foreground flex size-12 items-center justify-center rounded-lg transition-transform group-hover:scale-105">
+                <module.icon className="size-6" />
               </div>
-            ))}
-            <input
-              placeholder="Add a task"
-              className="text-muted-foreground placeholder:text-muted-foreground/60 w-full bg-transparent text-sm focus:outline-none"
-            />
-          </div>
-        </div>
-      ))}
+              <div>
+                <p className="font-medium">{module.name}</p>
+                {module.description && (
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    {module.description}
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

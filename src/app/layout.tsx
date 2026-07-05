@@ -4,12 +4,10 @@ import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
 import type { Metadata } from "next";
 import { Figtree, Lora } from "next/font/google";
 
-import AppSidebar from "@/components/shared/app-sidebar";
 import BreakpointIndicator from "@/components/shared/breakpoint-indicator";
-import TopNavbar from "@/components/shared/top-navbar";
 import ThemeProvider from "@/components/theme-provider";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ModuleProvider } from "@/context/module-context";
 import { cn } from "@/lib/utils";
 
 const loraHeading = Lora({ subsets: ["latin"], variable: "--font-heading" });
@@ -44,20 +42,16 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TooltipProvider>
-            <SidebarProvider>
-              <AppSidebar />
-              <main className="w-full">
-                <TopNavbar />
-                {children}
+            <ModuleProvider>
+              {children}
 
-                <TanStackDevtools
-                  plugins={[
-                    { name: "Tanstack Form", render: <FormDevtoolsPanel /> },
-                  ]}
-                />
-                <BreakpointIndicator />
-              </main>
-            </SidebarProvider>
+              <TanStackDevtools
+                plugins={[
+                  { name: "Tanstack Form", render: <FormDevtoolsPanel /> },
+                ]}
+              />
+              <BreakpointIndicator />
+            </ModuleProvider>
           </TooltipProvider>
         </ThemeProvider>
       </body>
