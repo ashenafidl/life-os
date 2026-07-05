@@ -10,7 +10,7 @@ export default function ModuleLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main className="w-full">
+      <main className="w-full overflow-auto">
         <TopNavbar />
         {children}
       </main>

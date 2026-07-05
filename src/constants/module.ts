@@ -5,6 +5,7 @@ import {
   ChecksIcon,
   HouseIcon,
   KanbanIcon,
+  TrayIcon,
 } from "@phosphor-icons/react";
 import { Route } from "next";
 
@@ -19,9 +20,9 @@ export const modules: Module[] = [
     description: "Manage your todos and tasks",
   },
   {
-    key: "expenses",
+    key: "finance",
     icon: BankIcon,
-    name: "Expenses",
+    name: "Finance",
     description: "Track your transactions",
   },
   {
@@ -43,7 +44,10 @@ export const navItems: Record<string, NavItem[]> = {
     { icon: HouseIcon, label: "Home", href: "/tasks" as Route },
     { icon: KanbanIcon, label: "Projects", href: "/projects" as Route },
   ],
-  expenses: [{ icon: BankIcon, label: "Accounts", href: "/expenses" as Route }],
+  finance: [
+    { icon: BankIcon, label: "Accounts", href: "/finance" as Route },
+    { icon: TrayIcon, label: "Inbox", href: "/inbox" as Route },
+  ],
   workouts: [
     { icon: BarbellIcon, label: "Workouts", href: "/workouts" as Route },
   ],

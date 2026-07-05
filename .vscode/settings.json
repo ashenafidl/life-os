@@ -1,3 +1,11 @@
 {
-  "cSpell.words": ["fieldset", "Figtree", "oxfmt", "oxlint"]
+  "cSpell.words": [
+    "dedup",
+    "fieldset",
+    "Figtree",
+    "mdns",
+    "oxfmt",
+    "oxlint",
+    "treeify"
+  ]
 }
