@@ -3,6 +3,7 @@
 import {
   ColumnDef,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { flexRender } from "@tanstack/react-table";
@@ -29,6 +30,7 @@ export default function DataTable<TData, TValue = any>({
     columns,
     data,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   });
 
   return (

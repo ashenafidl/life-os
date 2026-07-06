@@ -1,4 +1,5 @@
 import {
+  ArrowsLeftRightIcon,
   BankIcon,
   BarbellIcon,
   CalendarDotsIcon,
@@ -45,7 +46,11 @@ export const navItems: Record<string, NavItem[]> = {
     { icon: KanbanIcon, label: "Projects", href: "/projects" as Route },
   ],
   finance: [
-    { icon: BankIcon, label: "Accounts", href: "/finance" as Route },
+    {
+      icon: ArrowsLeftRightIcon,
+      label: "Transactions",
+      href: "/transactions" as Route,
+    },
     { icon: TrayIcon, label: "Inbox", href: "/inbox" as Route },
   ],
   workouts: [

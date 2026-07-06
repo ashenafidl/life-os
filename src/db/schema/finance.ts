@@ -1,4 +1,3 @@
-import { relations } from "drizzle-orm/_relations";
 import {
   integer,
   numeric,
@@ -6,6 +5,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -52,16 +52,19 @@ export const banks = pgTable("banks", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const bankPatterns = pgTable("bank_patterns", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  bankId: uuid("bank_id")
-    .notNull()
-    .references(() => banks.id, { onDelete: "cascade" }),
-  label: text("label").notNull(), // human label, e.g. "Debit alert", "Transfer confirmation"
-  regex: text("regex").notNull(),
-  flags: text("flags").notNull().default("i"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export const bankPatterns = pgTable(
+  "bank_patterns",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bankId: uuid("bank_id")
+      .notNull()
+      .references(() => banks.id, { onDelete: "cascade" }),
+    label: text("label").notNull(), // human label, e.g. "Debit alert", "Transfer confirmation"
+    regex: text("regex").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("uniquePerBank").on(table.bankId, table.label)],
+);
 
 export const transactions = pgTable("transactions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -75,43 +78,8 @@ export const transactions = pgTable("transactions", {
   patternId: uuid("pattern_id")
     .notNull()
     .references(() => bankPatterns.id),
-  type: transactionTypeEnum("type").notNull(),
   amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
   balanceAfter: numeric("balance_after", { precision: 14, scale: 2 }),
   reference: text("reference"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
-
-export const banksRelations = relations(banks, ({ many }) => ({
-  patterns: many(bankPatterns),
-  messages: many(smsMessages),
-  transactions: many(transactions),
-}));
-
-export const bankPatternsRelations = relations(
-  bankPatterns,
-  ({ one, many }) => ({
-    bank: one(banks, { fields: [bankPatterns.bankId], references: [banks.id] }),
-    transactions: many(transactions),
-  }),
-);
-
-export const smsMessagesRelations = relations(smsMessages, ({ one }) => ({
-  bank: one(banks, { fields: [smsMessages.bankId], references: [banks.id] }),
-  transaction: one(transactions, {
-    fields: [smsMessages.id],
-    references: [transactions.smsMessageId],
-  }),
-}));
-
-export const transactionsRelations = relations(transactions, ({ one }) => ({
-  smsMessage: one(smsMessages, {
-    fields: [transactions.smsMessageId],
-    references: [smsMessages.id],
-  }),
-  bank: one(banks, { fields: [transactions.bankId], references: [banks.id] }),
-  pattern: one(bankPatterns, {
-    fields: [transactions.patternId],
-    references: [bankPatterns.id],
-  }),
-}));

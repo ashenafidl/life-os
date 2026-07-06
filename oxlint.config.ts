@@ -12,6 +12,7 @@ export default defineConfig({
     "eslint/no-unused-vars": "error",
     "react/no-array-index-key": "error",
     "react/no-children-prop": "off",
+    "no-console": "warn",
   },
   ignorePatterns: ["src/components/ui/"],
 });

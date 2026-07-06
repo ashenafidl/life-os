@@ -5,6 +5,7 @@ import z from "zod";
 
 import { db } from "@/db/drizzle";
 import { smsMessages } from "@/db/schema/finance";
+import { parsePendingMessages } from "@/lib/sms-parser";
 
 const syncSchema = z.object({
   messages: z
@@ -32,9 +33,7 @@ function hashMessage(
 
 export async function POST(req: NextRequest) {
   const json = await req.json().catch(() => null);
-  console.log("🚀 ~ POST ~ json:", json);
   const parsed = syncSchema.safeParse(json);
-  console.log("🚀 ~ POST ~ parsed:", parsed.data?.messages);
 
   if (!parsed.success) {
     return NextResponse.json(
@@ -64,6 +63,8 @@ export async function POST(req: NextRequest) {
     .values(rows)
     .onConflictDoNothing({ target: [smsMessages.rawHash] })
     .returning({ id: smsMessages.id });
+
+  parsePendingMessages();
 
   return NextResponse.json({
     received: rows.length,
