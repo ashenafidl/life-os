@@ -6,6 +6,7 @@ import {
   ChecksIcon,
   HouseIcon,
   KanbanIcon,
+  SquaresFourIcon,
   TrayIcon,
 } from "@phosphor-icons/react";
 import { Route } from "next";
@@ -46,6 +47,7 @@ export const navItems: Record<string, NavItem[]> = {
     { icon: KanbanIcon, label: "Projects", href: "/projects" as Route },
   ],
   finance: [
+    { icon: SquaresFourIcon, label: "Dashboard", href: "/dashboard" as Route },
     {
       icon: ArrowsLeftRightIcon,
       label: "Transactions",

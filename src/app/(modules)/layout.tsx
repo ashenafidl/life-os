@@ -8,7 +8,7 @@ export default function ModuleLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <AppSidebar />
       <main className="w-full overflow-auto">
         <TopNavbar />

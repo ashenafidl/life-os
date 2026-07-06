@@ -33,6 +33,7 @@ export default function RootLayout({
         figtree.variable,
         loraHeading.variable,
       )}
+      suppressHydrationWarning
     >
       <body>
         <ThemeProvider

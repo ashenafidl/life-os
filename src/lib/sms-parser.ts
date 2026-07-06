@@ -7,6 +7,7 @@ import {
   smsMessages,
   transactions,
 } from "@/db/schema/finance";
+import { toEpochMs } from "@/lib/date-utils";
 
 type BankWithPatterns = typeof banks.$inferSelect & {
   patterns: (typeof bankPatterns.$inferSelect)[];
@@ -25,7 +26,7 @@ function findBank(address: string, allBanks: BankWithPatterns[]) {
 function matchPattern(body: string, patterns: BankWithPatterns["patterns"]) {
   for (const pattern of patterns) {
     try {
-      const regex = new RegExp(pattern.regex);
+      const regex = new RegExp(pattern.regex, "i");
       const match = body.match(regex);
       if (match?.groups?.amount) {
         return { pattern, groups: match.groups };
@@ -41,22 +42,19 @@ function stripCommas(value: string) {
   return value.replace(/,/g, "");
 }
 
-export async function parsePendingMessages() {
+export async function parseMessages(
+  messages: (typeof smsMessages.$inferSelect)[],
+) {
   const allBanks = await db.query.banks.findMany({
     with: {
       patterns: true,
     },
   });
 
-  const pendingMessages = await db
-    .select()
-    .from(smsMessages)
-    .where(eq(smsMessages.status, "pending"));
-
   let parsed = 0;
   let unmatched = 0;
 
-  for (const msg of pendingMessages) {
+  for (const msg of messages) {
     const bank = findBank(msg.address, allBanks);
 
     if (!bank) {
@@ -92,22 +90,42 @@ export async function parsePendingMessages() {
           smsMessageId: msg.id,
           bankId: bank.id,
           patternId: pattern.id,
+          tnxId: groups.tnxId,
+          sender: groups.sender,
+          senderAccount: groups.senderAccount,
+          recipientName: groups.recipientName,
+          recipientPhone: groups.recipientPhone,
           amount: groups.amount ?? 0,
+          totalAmount: groups.totalAmount ?? 0,
+          serviceCharge: groups.serviceCharge ?? 0,
+          vat: groups.vat ?? 0,
+          disasterRecovery: groups.disasterRecovery ?? 0,
           balanceAfter: groups.balanceAfter
             ? stripCommas(groups.balanceAfter)
             : null,
           reference: groups.reference ?? null,
+          occurredAt: groups.datTime ? toEpochMs(groups.datTime) : msg.date,
         })
         .onConflictDoUpdate({
           target: transactions.smsMessageId,
           set: {
             bankId: bank.id,
             patternId: pattern.id,
+            tnxId: groups.tnxId,
+            sender: groups.sender,
+            senderAccount: groups.senderAccount,
+            recipientName: groups.recipientName,
+            recipientPhone: groups.recipientPhone,
             amount: stripCommas(groups.amount),
+            totalAmount: groups.totalAmount ?? 0,
+            serviceCharge: groups.serviceCharge ?? 0,
+            vat: groups.vat ?? 0,
+            disasterRecovery: groups.disasterRecovery ?? 0,
             balanceAfter: groups.balanceAfter
               ? stripCommas(groups.balanceAfter)
               : null,
             reference: groups.reference ?? null,
+            occurredAt: groups.datTime ? toEpochMs(groups.datTime) : msg.date,
           },
         });
 
@@ -120,5 +138,16 @@ export async function parsePendingMessages() {
     parsed++;
   }
 
-  return { attempted: pendingMessages.length, parsed, unmatched };
+  // oxlint-disable-next-line no-console
+  console.log({ attempted: messages.length, parsed, unmatched });
+  return { attempted: messages.length, parsed, unmatched };
+}
+
+export async function parsePendingMessages() {
+  const pendingMessages = await db
+    .select()
+    .from(smsMessages)
+    .where(eq(smsMessages.status, "pending"));
+
+  return parseMessages(pendingMessages);
 }

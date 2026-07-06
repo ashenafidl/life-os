@@ -3,6 +3,7 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
 import SmsStatusBadge from "@/components/finance/sms-status-badge";
+import FormattedDate from "@/components/shared/formatted-date";
 import DataTableLongTextCell from "@/components/table/cells/data-table-long-text-cell";
 import { DataTableColumnHeader } from "@/components/table/data-table-column-header";
 import { smsMessages } from "@/db/schema/finance";
@@ -43,6 +44,7 @@ export const inboxColumns: ColumnDef<SmsMessage, any>[] = [
     header: (props) => (
       <DataTableColumnHeader column={props.column} title="Date" />
     ),
+    cell: (date) => <FormattedDate date={date.getValue()} />,
     sortingFn: "datetime",
   }),
   columnHelper.accessor("rawHash", { id: "rawHash" }),

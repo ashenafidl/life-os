@@ -31,7 +31,7 @@ export function DataTableColumnHeader<TData, TValue>({
   className,
   ...props
 }: DataTableColumnHeaderProps<TData, TValue>) {
-  if (!column.getCanSort() && !column.getCanHide()) {
+  if (!column.getCanSort()) {
     return <div className={cn(className)}>{title}</div>;
   }
 
@@ -55,34 +55,30 @@ export function DataTableColumnHeader<TData, TValue>({
           ))}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-28">
-        {column.getCanSort() && (
-          <>
-            <DropdownMenuCheckboxItem
-              className="[&_svg]:text-muted-foreground relative pr-8 pl-2 [&>span:first-child]:right-2 [&>span:first-child]:left-auto"
-              checked={column.getIsSorted() === "asc"}
-              onClick={() => column.toggleSorting(false)}
-            >
-              <CaretUpIcon />
-              Asc
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              className="[&_svg]:text-muted-foreground relative pr-8 pl-2 [&>span:first-child]:right-2 [&>span:first-child]:left-auto"
-              checked={column.getIsSorted() === "desc"}
-              onClick={() => column.toggleSorting(true)}
-            >
-              <CaretDownIcon />
-              Desc
-            </DropdownMenuCheckboxItem>
-            {column.getIsSorted() && (
-              <DropdownMenuItem
-                className="[&_svg]:text-muted-foreground pl-2"
-                onClick={() => column.clearSorting()}
-              >
-                <XIcon />
-                Reset
-              </DropdownMenuItem>
-            )}
-          </>
+        <DropdownMenuCheckboxItem
+          className="[&_svg]:text-muted-foreground relative pr-8 pl-2 [&>span:first-child]:right-2 [&>span:first-child]:left-auto"
+          checked={column.getIsSorted() === "asc"}
+          onClick={() => column.toggleSorting(false)}
+        >
+          <CaretUpIcon />
+          Asc
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          className="[&_svg]:text-muted-foreground relative pr-8 pl-2 [&>span:first-child]:right-2 [&>span:first-child]:left-auto"
+          checked={column.getIsSorted() === "desc"}
+          onClick={() => column.toggleSorting(true)}
+        >
+          <CaretDownIcon />
+          Desc
+        </DropdownMenuCheckboxItem>
+        {column.getIsSorted() && (
+          <DropdownMenuItem
+            className="[&_svg]:text-muted-foreground pl-2"
+            onClick={() => column.clearSorting()}
+          >
+            <XIcon />
+            Reset
+          </DropdownMenuItem>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

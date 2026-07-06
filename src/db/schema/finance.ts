@@ -28,7 +28,7 @@ export const smsMessages = pgTable("sms_messages", {
   smsId: integer("sms_id").notNull(),
   address: text("sender").notNull(),
   body: text("body").notNull(),
-  date: timestamp("received_at", { withTimezone: true }).notNull(), // when the phone received it
+  date: timestamp("received_at").notNull(), // when the phone received it
   rawHash: text("raw_hash").notNull().unique(), // sha256(sender+body+receivedAt), for dedup
 
   // "pending" until a parse attempt runs. "parsed" once a transaction row
@@ -78,8 +78,27 @@ export const transactions = pgTable("transactions", {
   patternId: uuid("pattern_id")
     .notNull()
     .references(() => bankPatterns.id),
+  tnxId: text("tnx_id").unique(),
+  sender: text("sender"),
+  senderAccount: text("sender_account"),
+  recipientName: text("recipient_name"),
+  recipientPhone: text("recipient_phone"),
+  serviceCharge: numeric("service_charge", {
+    precision: 14,
+    scale: 2,
+  }),
+  vat: numeric("vat", {
+    precision: 14,
+    scale: 2,
+  }),
+  disasterRecovery: numeric("disaster_recovery", {
+    precision: 14,
+    scale: 2,
+  }),
   amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+  totalAmount: numeric("total_amount", { precision: 14, scale: 2 }).notNull(),
   balanceAfter: numeric("balance_after", { precision: 14, scale: 2 }),
   reference: text("reference"),
+  occurredAt: timestamp("occurred_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

@@ -1,3 +1,4 @@
+import ActionsBar from "@/app/(modules)/(finance)/inbox/actions-bar";
 import { inboxColumns } from "@/app/(modules)/(finance)/inbox/columns";
 import DataTable from "@/components/table/data-table";
 import { db } from "@/db/drizzle";
@@ -8,7 +9,9 @@ export default async function InboxPage() {
 
   return (
     <div className="p-4">
-      <DataTable columns={inboxColumns} data={data} />
+      <DataTable columns={inboxColumns} data={data}>
+        <ActionsBar />
+      </DataTable>
     </div>
   );
 }
