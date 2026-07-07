@@ -26,5 +26,6 @@ if (!globalThis.__bonjourPublished) {
   process.once("SIGINT", shutdown);
   process.once("SIGTERM", shutdown);
 
+  // oxlint-disable-next-line no-console
   console.log(`[mdns] Advertising as _sms-sync._tcp.local on port ${port}`);
 }

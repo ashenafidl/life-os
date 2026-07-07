@@ -5,14 +5,7 @@ import { isNotNull, desc } from "drizzle-orm";
 
 import { db } from "@/db/drizzle";
 import { banks, smsMessages, transactions } from "@/db/schema/finance";
-import { projects } from "@/db/schema/tasks";
 import { parseMessages } from "@/lib/sms-parser";
-
-type NewProject = typeof projects.$inferInsert;
-
-export async function createProject(values: NewProject) {
-  await db.insert(projects).values(values);
-}
 
 export async function parseAllMessages() {
   const pendingMessages = await db.select().from(smsMessages);
