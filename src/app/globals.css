@@ -144,4 +144,32 @@
       @apply gap-4!;
     }
   }
+
+  /* Theme switcher sweep animation */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-old(root) {
+    z-index: 1;
+  }
+
+  ::view-transition-new(root) {
+    z-index: 2;
+  }
+
+  @keyframes theme-sweep-reveal {
+    from {
+      clip-path: circle(0% at var(--sweep-x, 50%) var(--sweep-y, 50%));
+    }
+    to {
+      clip-path: circle(150% at var(--sweep-x, 50%) var(--sweep-y, 50%));
+    }
+  }
+
+  ::view-transition-new(root) {
+    animation: theme-sweep-reveal 0.6s ease-in-out;
+  }
 }
