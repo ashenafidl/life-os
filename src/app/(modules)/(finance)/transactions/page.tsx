@@ -1,14 +1,14 @@
-import { tnxColumns } from "@/app/(modules)/(finance)/transactions/columns";
-import DataTable from "@/components/table/data-table";
-import { db } from "@/db/drizzle";
-import { transactions } from "@/db/schema/finance";
+import SmsMatchViewer from "@/components/finance/sms-match-viewer";
+import { getTransactionReview } from "@/lib/get-transaction-review";
 
 export default async function TransactionsPage() {
-  const data = await db.select().from(transactions);
+  const reviews = await getTransactionReview();
 
   return (
-    <div className="p-4">
-      <DataTable columns={tnxColumns} data={data} />
+    <div className="space-y-4 p-4">
+      {reviews.map((review) => (
+        <SmsMatchViewer key={review.transactionId} review={review} />
+      ))}
     </div>
   );
 }
