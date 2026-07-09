@@ -39,7 +39,7 @@ function matchPattern(body: string, patterns: BankWithPatterns["patterns"]) {
 }
 
 function stripCommas(value: string) {
-  return value.replace(/,/g, "");
+  return typeof value === "string" ? value?.replace(/,/g, "") : value;
 }
 
 export async function parseMessages(
@@ -95,16 +95,16 @@ export async function parseMessages(
           senderAccount: groups.senderAccount,
           recipientName: groups.recipientName,
           recipientPhone: groups.recipientPhone,
-          amount: groups.amount ?? 0,
-          totalAmount: groups.totalAmount ?? 0,
-          serviceCharge: groups.serviceCharge ?? 0,
-          vat: groups.vat ?? 0,
-          disasterRecovery: groups.disasterRecovery ?? 0,
+          amount: stripCommas(groups.amount) ?? 0,
+          totalAmount: stripCommas(groups.totalAmount) ?? 0,
+          serviceCharge: stripCommas(groups.serviceCharge) ?? 0,
+          vat: stripCommas(groups.vat) ?? 0,
+          disasterRecovery: stripCommas(groups.disasterRecovery) ?? 0,
           balanceAfter: groups.balanceAfter
             ? stripCommas(groups.balanceAfter)
             : null,
           reference: groups.reference ?? null,
-          occurredAt: groups.datTime ? toEpochMs(groups.datTime) : msg.date,
+          occurredAt: groups.dateTime ? toEpochMs(groups.dateTime) : msg.date,
         })
         .onConflictDoUpdate({
           target: transactions.smsMessageId,
@@ -117,15 +117,15 @@ export async function parseMessages(
             recipientName: groups.recipientName,
             recipientPhone: groups.recipientPhone,
             amount: stripCommas(groups.amount),
-            totalAmount: groups.totalAmount ?? 0,
-            serviceCharge: groups.serviceCharge ?? 0,
-            vat: groups.vat ?? 0,
-            disasterRecovery: groups.disasterRecovery ?? 0,
+            totalAmount: stripCommas(groups.totalAmount) ?? 0,
+            serviceCharge: stripCommas(groups.serviceCharge) ?? 0,
+            vat: stripCommas(groups.vat) ?? 0,
+            disasterRecovery: stripCommas(groups.disasterRecovery) ?? 0,
             balanceAfter: groups.balanceAfter
               ? stripCommas(groups.balanceAfter)
               : null,
             reference: groups.reference ?? null,
-            occurredAt: groups.datTime ? toEpochMs(groups.datTime) : msg.date,
+            occurredAt: groups.dateTime ? toEpochMs(groups.dateTime) : msg.date,
           },
         });
 

@@ -60,7 +60,7 @@ const fieldColors: Record<
     text: "text-lime-700 dark:text-lime-400",
     border: "border-lime-500/40",
   },
-  datTime: {
+  dateTime: {
     bg: "bg-slate-500/15",
     text: "text-slate-700 dark:text-slate-400",
     border: "border-slate-500/40",
@@ -95,6 +95,6 @@ export const fieldLabels: Record<string, string> = {
   recipientName: "Recipient",
   recipientPhone: "Recipient Phone",
   tnxID: "Transaction ID",
-  datTime: "Date/Time (raw)",
+  dateTime: "Date/Time (raw)",
   reference: "Reference Link",
 };
