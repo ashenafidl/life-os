@@ -53,7 +53,27 @@ export const seedData: SeedBank[] = [
       {
         label: "Transfer to individual",
         regex:
-          "Dear\\s+(?<sender>.+?)\\s+you\\s+have\\s+transferred\\s+ETB\\s+(?<amount>[\\d,]+.\\d+)\\s+to\\s+(?<recipientName>.+?)\\s+\\((?<recipientPhone>[\\d,]+\\*{1,}\\d+)\\)\\s+on\\s+(?<dateTime>\\d{2}\\/\\d{2}\\/\\d{4}\\s+\\d{2}:\\d{2}:\\d{2}).\\s+Your\\s+transaction\\s+number\\s+is\\s+(?<tnxID>[a-zA-Z0-9]+).\\s+The\\s+service\\s+fee\\s+is\\s+ETB\\s+(?<serviceCharge>[\\d,]+.\\d+).+service\\s+fee\\s+is\\s+ETB\\s+(?<vat>[\\d,]+.\\d+)\\..+account\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+.\\d+)\\..+this\\s+link:\\s+(?<reference>https:\\/\\/\\S+)\\.",
+          "Dear\\s+(?<sender>.+?)\\s+you\\s+have\\s+transferred\\s+ETB\\s+(?<amount>[\\d,]+.\\d+)\\s+to\\s+(?<recipientName>.+?)\\s+\\((?<recipientPhone>[\\d,]+\\*{1,}\\d+)\\)\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+(?<time>\\d{2}:\\d{2}:\\d{2}).\\s+Your\\s+transaction\\s+number\\s+is\\s+(?<tnxID>[a-zA-Z0-9]+).\\s+The\\s+service\\s+fee\\s+is\\s+ETB\\s+(?<serviceCharge>[\\d,]+.\\d+).+service\\s+fee\\s+is\\s+ETB\\s+(?<vat>[\\d,]+.\\d+)\\..+account\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+.\\d+)\\..+this\\s+link:\\s+(?<reference>https:\\/\\/\\S+)\\.",
+      },
+      {
+        label: "Airtime top-up",
+        regex:
+          "Dear\\s+(?<senderName>.+?)\\s+you have\\s+recharged\\s+ETB\\s+(?<amount>[\\d,]+.\\d+)\\s+airtime\\s+for\\s+\\d+\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+(?<time>\\d{2}:\\d{2}:\\d{2}).\\s+your\\s+transaction\\s+number\\s+is\\s+(?<tnxID>[a-zA-Z0-9]+).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+).\\s+to\\s+download\\s+your\\s+payment\\s+information\\s+please\\s+click\\s+this\\s+link:\\s+(?<reference>https:\\/\\/\\S+)",
+      },
+      {
+        label: "Incoming transfer from Telebirr account",
+        regex:
+          "Dear\\s+(?<recipientName>.+?)\\s+you have\\s+received\\s+ETB\\s+(?<amount>[\\d,]+.\\d+)\\s+from\\s+(?<senderName>.+?)\\((?<senderPhone>[\\d,]+\\*{1,}\\d+)\\)\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+(?<time>\\d{2}:\\d{2}:\\d{2}).\\s+Your\\s+transaction\\s+number\\s+is\\s+(?<tnxID>[a-zA-Z0-9]+)..+account\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+.\\d+)",
+      },
+      {
+        label: "Package purchase",
+        regex:
+          "Dear\\s+(?<senderName>.+?)\\s+you\\s+have\\s+paid\\s+ETB\\s+(?<amount>[\\d,]+.\\d+).+made\\s+for\\s+(?<recipientPhone>\\d+)\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+(?<time>\\d{2}:\\d{2}:\\d{2}).\\s+Your\\s+transaction\\s+number\\s+is\\s+(?<tnxID>[a-zA-Z0-9]+).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+).\\s?to\\s+download\\s+your\\s+payment\\s+information\\s+please\\s+click\\s+this\\s+link:\\s+(?<reference>https:\\/\\/\\S+)",
+      },
+      {
+        label: "Bill payment",
+        regex:
+          "Dear\\s+(?<senderName>.+?)\\s+you\\s+have\\s+paid\\s+ETB\\s+(?<amount>[\\d,]+.\\d+).+?on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+(?<time>\\d{2}:\\d{2}:\\d{2}).\\s+Your\\s+transaction\\s+number\\s+is\\s+(?<tnxID>[a-zA-Z0-9]+).\\s+your\\s+telebirr\\s+account\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+).\\s?to\\s+download\\s+your\\s+payment\\s+information\\s+please\\s+click\\s+this\\s+link:\\s+(?<reference>https:\\/\\/\\S+)",
       },
     ],
   },
@@ -66,7 +86,7 @@ export const seedData: SeedBank[] = [
       {
         label: "Other bank transfer",
         regex:
-          "your\\s+account\\s+\\'(?<senderAccount>\\d+\\*{1,}\\d+)\\'\\s+is\\s+debited\\s+with\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d+)\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+at\\s+(?<time>\\d{2}:\\d{2}:\\d{2}\\s+\b(?:AM|PM)\b).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+)",
+          "your\\s+account\\s+\\'(?<senderAccount>\\d+\\*{1,}\\d+)\\'\\s+is\\s+debited\\s+with\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d+)\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+at\\s+(?<time>\\d{2}:\\d{2}:\\d{2}\\s(?:AM|PM)).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+)",
       },
     ],
   },

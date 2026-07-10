@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
 import { db } from "@/db/drizzle";
 import {
@@ -33,7 +33,8 @@ export async function getTransactionReview(): Promise<TransactionReview[]> {
     .from(transactions)
     .innerJoin(smsMessages, eq(transactions.smsMessageId, smsMessages.id))
     .innerJoin(bankPatterns, eq(transactions.patternId, bankPatterns.id))
-    .innerJoin(banks, eq(transactions.bankId, banks.id));
+    .innerJoin(banks, eq(transactions.bankId, banks.id))
+    .orderBy(desc(transactions.occurredAt));
 
   return rows.map((row) => {
     const fields: MatchedField[] = [];

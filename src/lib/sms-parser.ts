@@ -7,7 +7,7 @@ import {
   smsMessages,
   transactions,
 } from "@/db/schema/finance";
-import { toEpochMs } from "@/lib/date-utils";
+import { toEpoch } from "@/lib/date-utils";
 
 type BankWithPatterns = typeof banks.$inferSelect & {
   patterns: (typeof bankPatterns.$inferSelect)[];
@@ -23,13 +23,109 @@ function findBank(address: string, allBanks: BankWithPatterns[]) {
   });
 }
 
+interface GroupBoundary {
+  name: string;
+  endIndex: number; // position of this group's closing paren
+  openDepthAfter: number; // how many enclosing groups are still unclosed at this point
+}
+
+/** Finds the closing-paren position of every top-level or nested named
+ * group in a regex source string, in the order they close. Skips
+ * lookbehind assertions ((?<=...) / (?<!...)), which look similar but
+ * aren't named capture groups. */
+function findNamedGroupBoundaries(source: string): GroupBoundary[] {
+  const boundaries: GroupBoundary[] = [];
+  const stack: { name: string | null }[] = [];
+  let inCharClass = false;
+
+  for (let i = 0; i < source.length; i++) {
+    const ch = source[i];
+
+    if (ch === "\\") {
+      i++; // skip escaped char, it can't open/close a group or class
+      continue;
+    }
+
+    if (inCharClass) {
+      if (ch === "]") inCharClass = false;
+      continue;
+    }
+
+    if (ch === "[") {
+      inCharClass = true;
+      continue;
+    }
+
+    if (ch === "(") {
+      const namedMatch = source.slice(i).match(/^\(\?<([A-Za-z_$][\w$]*)>/);
+      const isLookbehind = /^\(\?<[=!]/.test(source.slice(i));
+      stack.push({ name: !isLookbehind && namedMatch ? namedMatch[1] : null });
+      continue;
+    }
+
+    if (ch === ")") {
+      const opened = stack.pop();
+      if (opened?.name) {
+        boundaries.push({
+          name: opened.name,
+          endIndex: i,
+          openDepthAfter: stack.length,
+        });
+      }
+      continue;
+    }
+  }
+
+  return boundaries;
+}
+
+function debugMatch(body: string, inputRegex: string) {
+  console.log("Body (raw, escaped):", JSON.stringify(body));
+  console.log("Regex source:", inputRegex);
+
+  const fullRegex = new RegExp(inputRegex, "id");
+  const fullMatch = body.match(fullRegex);
+  console.log("Full match:", fullMatch);
+  if (fullMatch) return fullMatch;
+
+  const boundaries = findNamedGroupBoundaries(inputRegex);
+
+  for (const boundary of boundaries) {
+    // Truncate right after this group's closing paren, then re-close
+    // any still-open enclosing groups so the truncated pattern is valid.
+    const truncated =
+      inputRegex.slice(0, boundary.endIndex + 1) +
+      ")".repeat(boundary.openDepthAfter);
+
+    try {
+      const ok = new RegExp(truncated, "id").test(body);
+      console.log(`Matches through group "${boundary.name}":`, ok);
+      if (!ok) {
+        console.log(
+          `--> Breaks in the literal text right after group "${boundary.name}"`,
+        );
+        console.log("    Truncated pattern that failed:", truncated);
+        break;
+      }
+    } catch (e) {
+      console.log(
+        `Regex became invalid truncating after "${boundary.name}":`,
+        e,
+      );
+      break;
+    }
+  }
+}
+
 function matchPattern(body: string, patterns: BankWithPatterns["patterns"]) {
   for (const pattern of patterns) {
     try {
       const regex = new RegExp(pattern.regex, "i");
       const match = body.match(regex);
-      if (match?.groups?.amount) {
+      if (match?.groups) {
         return { pattern, groups: match.groups };
+      } else {
+        debugMatch(body, pattern.regex);
       }
     } catch {
       continue;
@@ -95,6 +191,7 @@ export async function parseMessages(
           senderAccount: groups.senderAccount,
           recipientName: groups.recipientName,
           recipientPhone: groups.recipientPhone,
+          senderPhone: groups.senderPhone,
           amount: stripCommas(groups.amount) ?? 0,
           totalAmount: stripCommas(groups.totalAmount) ?? 0,
           serviceCharge: stripCommas(groups.serviceCharge) ?? 0,
@@ -104,7 +201,9 @@ export async function parseMessages(
             ? stripCommas(groups.balanceAfter)
             : null,
           reference: groups.reference ?? null,
-          occurredAt: groups.dateTime ? toEpochMs(groups.dateTime) : msg.date,
+          occurredAt: groups.dateTime
+            ? toEpoch(groups.date, groups.time)
+            : msg.date,
         })
         .onConflictDoUpdate({
           target: transactions.smsMessageId,
@@ -116,6 +215,7 @@ export async function parseMessages(
             senderAccount: groups.senderAccount,
             recipientName: groups.recipientName,
             recipientPhone: groups.recipientPhone,
+            senderPhone: groups.senderPhone,
             amount: stripCommas(groups.amount),
             totalAmount: stripCommas(groups.totalAmount) ?? 0,
             serviceCharge: stripCommas(groups.serviceCharge) ?? 0,
@@ -125,7 +225,9 @@ export async function parseMessages(
               ? stripCommas(groups.balanceAfter)
               : null,
             reference: groups.reference ?? null,
-            occurredAt: groups.dateTime ? toEpochMs(groups.dateTime) : msg.date,
+            occurredAt: groups.dateTime
+              ? toEpoch(groups.date, groups.time)
+              : msg.date,
           },
         });
 

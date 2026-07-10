@@ -83,6 +83,7 @@ export const transactions = pgTable("transactions", {
   senderAccount: text("sender_account"),
   recipientName: text("recipient_name"),
   recipientPhone: text("recipient_phone"),
+  senderPhone: text("sender_phone"),
   serviceCharge: numeric("service_charge", {
     precision: 14,
     scale: 2,

@@ -55,12 +55,22 @@ const fieldColors: Record<
     text: "text-rose-700 dark:text-rose-400",
     border: "border-rose-500/40",
   },
+  senderPhone: {
+    bg: "bg-rose-500/15",
+    text: "text-rose-700 dark:text-rose-400",
+    border: "border-rose-500/40",
+  },
   tnxID: {
     bg: "bg-lime-500/15",
     text: "text-lime-700 dark:text-lime-400",
     border: "border-lime-500/40",
   },
-  dateTime: {
+  date: {
+    bg: "bg-slate-500/15",
+    text: "text-slate-700 dark:text-slate-400",
+    border: "border-slate-500/40",
+  },
+  time: {
     bg: "bg-slate-500/15",
     text: "text-slate-700 dark:text-slate-400",
     border: "border-slate-500/40",
@@ -94,7 +104,9 @@ export const fieldLabels: Record<string, string> = {
   senderAccount: "Sender Account",
   recipientName: "Recipient",
   recipientPhone: "Recipient Phone",
+  senderPhone: "Sender Phone",
   tnxID: "Transaction ID",
-  dateTime: "Date/Time (raw)",
+  date: "Date",
+  time: "Time",
   reference: "Reference Link",
 };

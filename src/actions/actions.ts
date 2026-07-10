@@ -1,11 +1,19 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { isNotNull, desc } from "drizzle-orm";
 
 import { db } from "@/db/drizzle";
 import { banks, smsMessages, transactions } from "@/db/schema/finance";
 import { parseMessages } from "@/lib/sms-parser";
+
+export async function deleteAllUnmatched() {
+  await db
+    .delete(smsMessages)
+    .where(
+      and(eq(smsMessages.status, "unmatched"), isNull(smsMessages.bankId)),
+    );
+}
 
 export async function parseAllMessages() {
   const pendingMessages = await db.select().from(smsMessages);
