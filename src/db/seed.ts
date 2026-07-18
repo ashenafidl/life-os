@@ -21,7 +21,7 @@ async function seed() {
           .values({ bankId: row.id, ...pattern })
           .onConflictDoUpdate({
             target: [bankPatterns.bankId, bankPatterns.label],
-            set: { regex: pattern.regex },
+            set: { regex: pattern.regex, type: pattern.type },
           });
       }
     }

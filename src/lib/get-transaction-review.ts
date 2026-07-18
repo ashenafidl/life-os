@@ -20,6 +20,7 @@ export interface TransactionReview {
   bankName: string;
   body: string;
   fields: MatchedField[];
+  pattern: typeof bankPatterns.$inferSelect;
 }
 
 export async function getTransactionReview(): Promise<TransactionReview[]> {
@@ -28,7 +29,7 @@ export async function getTransactionReview(): Promise<TransactionReview[]> {
       transactionId: transactions.id,
       bankName: banks.name,
       body: smsMessages.body,
-      regex: bankPatterns.regex,
+      pattern: bankPatterns,
     })
     .from(transactions)
     .innerJoin(smsMessages, eq(transactions.smsMessageId, smsMessages.id))
@@ -40,7 +41,7 @@ export async function getTransactionReview(): Promise<TransactionReview[]> {
     const fields: MatchedField[] = [];
 
     try {
-      const regex = new RegExp(row.regex, "id");
+      const regex = new RegExp(row.pattern.regex, "id");
       const match = regex.exec(row.body);
 
       if (match?.indices?.groups) {
@@ -62,6 +63,7 @@ export async function getTransactionReview(): Promise<TransactionReview[]> {
       bankName: row.bankName,
       body: row.body,
       fields,
+      pattern: row.pattern,
     };
   });
 }

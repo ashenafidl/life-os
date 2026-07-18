@@ -16,11 +16,8 @@ export const smsStatusEnum = pgEnum("sms_status", [
 ]);
 
 export const transactionTypeEnum = pgEnum("transaction_type", [
-  "debit",
-  "credit",
-  "transfer",
-  "withdrawal",
-  "deposit",
+  "income",
+  "expense",
 ]);
 
 export const smsMessages = pgTable("sms_messages", {
@@ -60,6 +57,7 @@ export const bankPatterns = pgTable(
       .notNull()
       .references(() => banks.id, { onDelete: "cascade" }),
     label: text("label").notNull(), // human label, e.g. "Debit alert", "Transfer confirmation"
+    type: transactionTypeEnum("type"),
     regex: text("regex").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
@@ -78,6 +76,7 @@ export const transactions = pgTable("transactions", {
   patternId: uuid("pattern_id")
     .notNull()
     .references(() => bankPatterns.id),
+  type: transactionTypeEnum("type"),
   tnxId: text("tnx_id").unique(),
   sender: text("sender"),
   senderAccount: text("sender_account"),

@@ -1,5 +1,6 @@
 "use client";
 
+import { TrendDownIcon, TrendUpIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 
 import FieldList from "@/components/finance/field-list";
@@ -17,8 +18,17 @@ export default function SmsMatchViewer({
   return (
     <Card className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2">
       <div>
-        <p className="text-muted-foreground mb-2 text-xs tracking-wide uppercase">
-          {review.bankName} - Raw Message
+        <p className="text-muted-foreground mb-2 flex items-center gap-2 text-xs tracking-wide uppercase">
+          <span>
+            {review.pattern.type === "income" ? (
+              <TrendUpIcon color="var(--color-green-500)" />
+            ) : (
+              <TrendDownIcon color="var(--destructive)" />
+            )}
+          </span>
+          <span>
+            {review.bankName} - {review.pattern.label}
+          </span>
         </p>
         <HighlightedBody
           body={review.body}
