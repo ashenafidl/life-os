@@ -103,6 +103,7 @@ export const fieldLabels: Record<string, string> = {
   sender: "Sender Name",
   senderAccount: "Sender Account",
   recipientName: "Recipient",
+  recipientAccount: "Recipient Account",
   recipientPhone: "Recipient Phone",
   senderPhone: "Sender Phone",
   tnxID: "Transaction ID",

@@ -1,13 +1,20 @@
-import { fieldLabels, getFieldColor } from "@/components/finance/field-colors";
+import { getFieldColor } from "@/components/finance/field-colors";
 import { MatchedField } from "@/lib/get-transaction-review";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  body: string;
+  fields: MatchedField[];
+  active: string | undefined;
+  setActive: (value?: string) => void;
+}
 
 export default function HighlightedBody({
   body,
   fields,
-}: {
-  body: string;
-  fields: MatchedField[];
-}) {
+  active,
+  setActive,
+}: Props) {
   if (fields.length === 0) {
     return (
       <p className="text-muted-foreground font-mono text-sm whitespace-pre-wrap">
@@ -37,8 +44,14 @@ export default function HighlightedBody({
       {segments.map((seg, i) => {
         if (!seg.field) {
           return (
-            // oxlint-disable-next-line react/no-array-index-key
-            <span key={i} className="text-muted-foreground">
+            <span
+              // oxlint-disable-next-line react/no-array-index-key
+              key={i}
+              className={cn(
+                "text-muted-foreground",
+                active !== undefined && "opacity-30",
+              )}
+            >
               {seg.text}
             </span>
           );
@@ -46,10 +59,15 @@ export default function HighlightedBody({
         const color = getFieldColor(seg.field.name);
         return (
           <span
-            // oxlint-disable-next-line react/no-array-index-key
-            key={i}
-            title={fieldLabels[seg.field.name] ?? seg.field.name}
-            className={`rounded px-0.5 font-medium ${color.bg} ${color.text}`}
+            key={seg.field.name}
+            className={cn(
+              "rounded px-0.5 font-medium",
+              color.bg,
+              color.text,
+              active !== seg.field.name && active !== undefined && "opacity-30",
+            )}
+            onMouseEnter={() => setActive(seg.field?.name)}
+            onMouseLeave={() => setActive()}
           >
             {seg.text}
           </span>
