@@ -7,7 +7,7 @@ export default async function TransactionsPage() {
   return (
     <div className="space-y-4 p-4">
       {reviews.map((review) => (
-        <SmsMatchViewer key={review.transactionId} review={review} />
+        <SmsMatchViewer key={review.transaction.id} review={review} />
       ))}
     </div>
   );

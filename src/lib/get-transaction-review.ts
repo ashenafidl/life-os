@@ -16,7 +16,7 @@ export interface MatchedField {
 }
 
 export interface TransactionReview {
-  transactionId: string;
+  transaction: typeof transactions.$inferSelect;
   bankName: string;
   body: string;
   fields: MatchedField[];
@@ -26,7 +26,7 @@ export interface TransactionReview {
 export async function getTransactionReview(): Promise<TransactionReview[]> {
   const rows = await db
     .select({
-      transactionId: transactions.id,
+      transaction: transactions,
       bankName: banks.name,
       body: smsMessages.body,
       pattern: bankPatterns,
@@ -59,7 +59,7 @@ export async function getTransactionReview(): Promise<TransactionReview[]> {
     fields.sort((a, b) => a.start - b.start);
 
     return {
-      transactionId: row.transactionId,
+      transaction: row.transaction,
       bankName: row.bankName,
       body: row.body,
       fields,

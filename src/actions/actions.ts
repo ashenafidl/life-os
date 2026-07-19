@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, gte, isNull, lt, sql } from "drizzle-orm";
 import { isNotNull, desc } from "drizzle-orm";
 
 import { db } from "@/db/drizzle";
@@ -59,4 +59,27 @@ export async function getBankBalances() {
   const total = balances.reduce((sum, b) => sum + (b.balance ?? 0), 0);
 
   return { balances, total };
+}
+
+export async function getDailyTotals(
+  from: Date,
+  to: Date,
+): Promise<Record<string, number>> {
+  const rows = await db
+    .select({
+      day: sql<string>`to_char(${transactions.occurredAt}, 'YYYY-MM-DD')`,
+      net: sql<string>`sum(
+        case when ${transactions.type} = 'income'
+          then ${transactions.amount}
+          else -${transactions.amount}
+        end
+      )`,
+    })
+    .from(transactions)
+    .where(
+      and(gte(transactions.occurredAt, from), lt(transactions.occurredAt, to)),
+    )
+    .groupBy(sql`1`);
+
+  return Object.fromEntries(rows.map((r) => [r.day, Number(r.net)]));
 }

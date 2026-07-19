@@ -102,6 +102,7 @@ export const fieldLabels: Record<string, string> = {
   disasterRecovery: "Disaster Recovery",
   sender: "Sender Name",
   senderAccount: "Sender Account",
+  senderName: "Sender Name",
   recipientName: "Recipient",
   recipientAccount: "Recipient Account",
   recipientPhone: "Recipient Phone",

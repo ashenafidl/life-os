@@ -1,4 +1,7 @@
-import { getBankBalances } from "@/actions/actions";
+import { startOfWeek, subDays } from "date-fns";
+
+import { getBankBalances, getDailyTotals } from "@/actions/actions";
+import HeatmapCalendar from "@/components/finance/heatmap-calendar";
 import FormattedDate from "@/components/shared/formatted-date";
 import {
   Card,
@@ -10,6 +13,11 @@ import formatMoney from "@/lib/money-utils";
 
 export default async function DashboardPage() {
   const { balances } = await getBankBalances();
+
+  const to = new Date();
+  const from = startOfWeek(subDays(to, 53 * 7 - 1));
+
+  const dayTotals = await getDailyTotals(from, to);
 
   return (
     <div className="space-y-4 p-4">
@@ -38,7 +46,11 @@ export default async function DashboardPage() {
           ))}
       </div>
 
-      {/* <HeatmapChart /> */}
+      <Card>
+        <CardContent>
+          <HeatmapCalendar data={dayTotals} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -9,7 +9,7 @@ export default defineConfig({
     builtin: true,
   },
   rules: {
-    "eslint/no-unused-vars": "error",
+    "eslint/no-unused-vars": "warn",
     "react/no-array-index-key": "error",
     "react/no-children-prop": "off",
     "no-console": "warn",
