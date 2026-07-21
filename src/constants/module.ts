@@ -2,6 +2,7 @@ import {
   ArrowsLeftRightIcon,
   BankIcon,
   BarbellIcon,
+  ClockCountdownIcon,
   SquaresFourIcon,
   TrayIcon,
 } from "@phosphor-icons/react";
@@ -18,6 +19,12 @@ export const modules: Module[] = [
     description: "Track your transactions",
   },
   {
+    key: "countdown",
+    icon: ClockCountdownIcon,
+    name: "Countdown",
+    description: "Track you important days",
+  },
+  {
     key: "workouts",
     icon: BarbellIcon,
     name: "Workout tracker",
@@ -27,13 +34,24 @@ export const modules: Module[] = [
 
 export const navItems: Record<string, NavItem[]> = {
   finance: [
-    { icon: SquaresFourIcon, label: "Dashboard", href: "/dashboard" as Route },
+    {
+      icon: SquaresFourIcon,
+      label: "Dashboard",
+      href: "/finance/dashboard" as Route,
+    },
     {
       icon: ArrowsLeftRightIcon,
       label: "Transactions",
-      href: "/transactions" as Route,
+      href: "/finance/transactions" as Route,
     },
-    { icon: TrayIcon, label: "Inbox", href: "/inbox" as Route },
+    { icon: TrayIcon, label: "Inbox", href: "/finance/inbox" as Route },
+  ],
+  countdown: [
+    {
+      icon: ClockCountdownIcon,
+      label: "Countdown",
+      href: "/countdown" as Route,
+    },
   ],
   workouts: [
     { icon: BarbellIcon, label: "Workouts", href: "/workouts" as Route },

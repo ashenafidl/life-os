@@ -11,7 +11,6 @@ import { ModuleProvider } from "@/context/module-context";
 import { cn } from "@/lib/utils";
 
 const loraHeading = Lora({ subsets: ["latin"], variable: "--font-heading" });
-
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {

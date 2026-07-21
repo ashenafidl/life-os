@@ -120,7 +120,7 @@ export default function HeatmapCalendar({ data }: Props) {
 
       <div className="flex flex-row gap-2">
         <div
-          className="text-muted-foreground grid w-5 shrink-0 items-center gap-0.5 text-center font-mono text-xs"
+          className="text-muted-foreground grid w-5 shrink-0 items-center gap-0.5 text-center text-xs"
           style={{ gridTemplateRows: "repeat(7, minmax(0, 1fr))" }}
         >
           {WEEK_LABELS.map((label, i) => (

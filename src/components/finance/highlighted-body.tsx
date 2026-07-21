@@ -17,7 +17,7 @@ export default function HighlightedBody({
 }: Props) {
   if (fields.length === 0) {
     return (
-      <p className="text-muted-foreground font-mono text-sm whitespace-pre-wrap">
+      <p className="text-muted-foreground text-sm whitespace-pre-wrap">
         {body}
       </p>
     );
@@ -40,7 +40,7 @@ export default function HighlightedBody({
   }
 
   return (
-    <p className="font-mono text-sm leading-relaxed whitespace-pre-wrap">
+    <p className="text-sm leading-relaxed whitespace-pre-wrap">
       {segments.map((seg, i) => {
         if (!seg.field) {
           return (

@@ -1,5 +1,5 @@
-import ActionsBar from "@/app/(modules)/(finance)/inbox/actions-bar";
-import { inboxColumns } from "@/app/(modules)/(finance)/inbox/columns";
+import ActionsBar from "@/app/(modules)/finance/inbox/actions-bar";
+import { inboxColumns } from "@/app/(modules)/finance/inbox/columns";
 import DataTable from "@/components/table/data-table";
 import { db } from "@/db/drizzle";
 import { smsMessages } from "@/db/schema/finance";
