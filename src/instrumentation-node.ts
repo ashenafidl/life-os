@@ -8,7 +8,7 @@ declare global {
 
 if (!globalThis.__bonjourPublished) {
   const bonjour = new Bonjour();
-  const port = Number(process.env.PORT) || 3000;
+  const port = Number(process.env.PORT) || 3131;
 
   bonjour.publish({
     name: "SMS Sync Server",
