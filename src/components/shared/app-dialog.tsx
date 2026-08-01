@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useState } from "react";
+import {
+  createContext,
+  type ReactElement,
+  type ReactNode,
+  useContext,
+  useState,
+} from "react";
 
 import {
   Dialog,
@@ -23,10 +29,12 @@ export function useDialogClose() {
 }
 
 interface Props {
-  trigger: ReactNode;
+  trigger?: ReactNode;
   title: string;
   description?: string;
   children: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export default function AppDialog({
@@ -34,16 +42,19 @@ export default function AppDialog({
   title,
   description,
   children,
+  open,
+  onOpenChange,
 }: Props) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = open ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const close = () => setOpen(false);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={trigger as React.ReactElement}
-        nativeButton={false}
-      />
+    <Dialog open={isOpen} onOpenChange={setOpen}>
+      {trigger && (
+        <DialogTrigger render={trigger as ReactElement} nativeButton={false} />
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

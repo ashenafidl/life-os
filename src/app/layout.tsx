@@ -1,6 +1,7 @@
 import "./globals.css";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
+import { HotkeysDevtoolsPanel } from "@tanstack/react-hotkeys-devtools";
 import type { Metadata } from "next";
 import { Figtree, Lora } from "next/font/google";
 
@@ -48,6 +49,15 @@ export default function RootLayout({
               <TanStackDevtools
                 plugins={[
                   { name: "Tanstack Form", render: <FormDevtoolsPanel /> },
+                  {
+                    name: "Tanstack Hotkeys",
+                    render: (
+                      <HotkeysDevtoolsPanel
+                        theme="light"
+                        devtoolsOpen={false}
+                      />
+                    ),
+                  },
                 ]}
               />
               <BreakpointIndicator />

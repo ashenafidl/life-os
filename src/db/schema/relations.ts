@@ -6,9 +6,10 @@ import {
   smsMessages,
   transactions,
 } from "@/db/schema/finance";
+import { projects } from "@/db/schema/shiplog";
 
 export const relations = defineRelations(
-  { banks, bankPatterns, smsMessages, transactions },
+  { banks, bankPatterns, smsMessages, transactions, projects },
   (r) => ({
     banks: {
       patterns: r.many.bankPatterns({
@@ -22,6 +23,12 @@ export const relations = defineRelations(
       transactions: r.many.transactions({
         from: r.banks.createdAt,
         to: r.transactions.bankId,
+      }),
+    },
+    projects: {
+      tasks: r.many.projects({
+        from: r.projects.id,
+        to: r.projects.id,
       }),
     },
   }),
