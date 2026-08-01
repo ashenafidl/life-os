@@ -4,7 +4,7 @@ import { CaretUpDownIcon } from "@phosphor-icons/react";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import AppDialog from "@/components/shared/app-dialog";
 import TaskForm from "@/components/shiplog/task-form";
@@ -26,8 +26,10 @@ import {
   SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { modules, navItems } from "@/constants/module";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useModule } from "@/hooks/use-module";
 import { Module } from "@/types/module";
 
@@ -35,16 +37,22 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
+  const { open, setOpen, setOpenMobile, openMobile } = useSidebar();
 
   const { activeModule, setActiveModule } = useModule();
 
   const items = navItems[activeModule.key] ?? [];
 
+  const toggleSidebar = useCallback(() => {
+    return isMobile ? setOpenMobile(!openMobile) : setOpen(!open);
+  }, [isMobile, setOpen, setOpenMobile, open, openMobile]);
+
   useHotkey("Q", () => {
     setTaskDialogOpen(true);
   });
-  useHotkey("Escape", () => {
-    setTaskDialogOpen(false);
+  useHotkey("M", () => {
+    toggleSidebar();
   });
 
   const handleModuleChange = (module: Module) => {
