@@ -2,11 +2,8 @@ import {
   ArrowsLeftRightIcon,
   BankIcon,
   BarbellIcon,
-  ChecksIcon,
   ClockCountdownIcon,
-  HashIcon,
   NotepadIcon,
-  PlusIcon,
   SquaresFourIcon,
   TrayIcon,
 } from "@phosphor-icons/react";
@@ -56,15 +53,7 @@ export const navItems: Record<string, NavItem[]> = {
     },
     { icon: TrayIcon, label: "Inbox", href: "/finance/inbox" as Route },
   ],
-  shiplog: [
-    {
-      icon: PlusIcon,
-      label: "Add Task",
-      dialog: "new-task",
-    },
-    { icon: ChecksIcon, label: "Tasks", href: "/shiplog/tasks" as Route },
-    { icon: HashIcon, label: "Projects", href: "/shiplog/projects" as Route },
-  ],
+  shiplog: [{ icon: NotepadIcon, label: "Shiplog", href: "/shiplog" as Route }],
   countdown: [
     {
       icon: ClockCountdownIcon,

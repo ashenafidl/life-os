@@ -124,7 +124,7 @@ function matchPattern(body: string, patterns: BankWithPatterns["patterns"]) {
       const match = body.match(regex);
       if (match?.groups) {
         return { pattern, groups: match.groups };
-      } else {
+      } else if (process.env.NODE_ENV === "development") {
         debugMatch(body, pattern.regex);
       }
     } catch {

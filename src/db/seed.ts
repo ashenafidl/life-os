@@ -2,6 +2,7 @@
 import { seedData } from "@/constants/seed-data";
 import { db } from "@/db/drizzle";
 import { bankPatterns, banks } from "@/db/schema/finance";
+import "dotenv/config";
 
 async function seed() {
   for (const item of seedData) {

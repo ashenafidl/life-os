@@ -4,6 +4,5 @@ import { Route } from "next";
 export interface NavItem {
   icon: Icon;
   label: string;
-  href?: Route;
-  dialog?: "new-task";
+  href: Route;
 }

@@ -4,10 +4,8 @@ import { CaretUpDownIcon } from "@phosphor-icons/react";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 
-import AppDialog from "@/components/shared/app-dialog";
-import TaskForm from "@/components/shiplog/task-form";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,14 +14,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Kbd } from "@/components/ui/kbd";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
@@ -36,7 +32,6 @@ import { Module } from "@/types/module";
 export default function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const isMobile = useIsMobile();
   const { open, setOpen, setOpenMobile, openMobile } = useSidebar();
 
@@ -48,18 +43,13 @@ export default function AppSidebar() {
     return isMobile ? setOpenMobile(!openMobile) : setOpen(!open);
   }, [isMobile, setOpen, setOpenMobile, open, openMobile]);
 
-  useHotkey("Q", () => {
-    setTaskDialogOpen(true);
-  });
   useHotkey("M", () => {
     toggleSidebar();
   });
 
   const handleModuleChange = (module: Module) => {
     setActiveModule(module);
-    const firstItem = navItems[module.key]?.find(
-      (item) => !item.dialog && item.href,
-    );
+    const firstItem = navItems[module.key][0];
     if (firstItem) router.push(firstItem.href!);
   };
 
@@ -133,40 +123,18 @@ export default function AppSidebar() {
           <SidebarMenu>
             {items.map((item) => (
               <SidebarMenuItem key={item.label}>
-                {item.href ? (
-                  <SidebarMenuButton
-                    render={<Link href={item.href} />}
-                    isActive={pathname === item.href}
-                  >
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                ) : (
-                  <>
-                    <SidebarMenuButton
-                      type="button"
-                      onClick={() => setTaskDialogOpen(true)}
-                    >
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                    <SidebarMenuBadge>
-                      <Kbd>Q</Kbd>
-                    </SidebarMenuBadge>
-                  </>
-                )}
+                <SidebarMenuButton
+                  render={<Link href={item.href} />}
+                  isActive={pathname === item.href}
+                >
+                  <item.icon />
+                  <span>{item.label}</span>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      <AppDialog
-        open={taskDialogOpen}
-        onOpenChange={setTaskDialogOpen}
-        title="New Task"
-      >
-        <TaskForm />
-      </AppDialog>
     </Sidebar>
   );
 }

@@ -1,5 +1,6 @@
 // oxlint-disable no-console
 import { migrate } from "drizzle-orm/node-postgres/migrator";
+import "dotenv/config";
 
 import { db } from "@/db/drizzle";
 
