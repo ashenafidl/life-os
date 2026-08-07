@@ -12,9 +12,7 @@ export default function Home() {
 
   const goToModule = (moduleKey: string) => {
     const module = modules.find((m) => m.key === moduleKey);
-    const firstItem = navItems[moduleKey]?.find(
-      (item) => !item.dialog && item.href,
-    );
+    const firstItem = navItems[moduleKey][0];
     if (module) setActiveModule(module);
     if (firstItem) router.push(firstItem.href!);
   };
