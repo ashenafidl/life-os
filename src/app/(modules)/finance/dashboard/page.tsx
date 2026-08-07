@@ -1,17 +1,20 @@
 import { Suspense } from "react";
 
-import Dashboard from "@/components/finance/dashboard";
+import BalanceCardSkeleton from "@/components/finance/dashboard/balance-card-skeleton";
+import BalanceCards from "@/components/finance/dashboard/balance-cards";
+import HeatmapCalendarCard from "@/components/finance/dashboard/heatmap-calendar-card";
+import HeatmapCalendarCardSkeleton from "@/components/finance/dashboard/heatmap-calendar-card-skeleton";
 
-export default async function DashboardPage() {
+export default function DashboardPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-full w-full items-center justify-center text-6xl">
-          Loading...
-        </div>
-      }
-    >
-      <Dashboard />
-    </Suspense>
+    <div className="space-y-4 p-4">
+      <Suspense fallback={<BalanceCardSkeleton />}>
+        <BalanceCards />
+      </Suspense>
+
+      <Suspense fallback={<HeatmapCalendarCardSkeleton />}>
+        <HeatmapCalendarCard />
+      </Suspense>
+    </div>
   );
 }

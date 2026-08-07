@@ -15,7 +15,7 @@ export default async function ModuleLayout({
         </div>
       }
     >
-      <AppSidebarProvider>{children}</AppSidebarProvider>;
+      <AppSidebarProvider>{children}</AppSidebarProvider>
     </Suspense>
   );
 }
