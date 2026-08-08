@@ -1,4 +1,5 @@
 // oxlint-disable no-console
+import "dotenv/config";
 import { seedData } from "@/constants/seed-data";
 import { db } from "@/db/drizzle";
 import { bankPatterns, banks } from "@/db/schema/finance";
