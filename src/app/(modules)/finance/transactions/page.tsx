@@ -1,17 +1,14 @@
-import { Suspense } from "react";
-
-import TransactionList from "@/components/finance/transaction-list";
+import SmsMatchViewer from "@/components/finance/sms-match-viewer";
+import { getTransactionReview } from "@/lib/queries/finance";
 
 export default async function TransactionsPage() {
+  const reviews = await getTransactionReview();
+
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-full w-full items-center justify-center text-6xl">
-          Loading...
-        </div>
-      }
-    >
-      <TransactionList />
-    </Suspense>
+    <div className="space-y-4 p-4">
+      {reviews.map((review) => (
+        <SmsMatchViewer key={review.transaction.id} review={review} />
+      ))}
+    </div>
   );
 }

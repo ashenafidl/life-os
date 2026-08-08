@@ -13,6 +13,7 @@ export default defineConfig({
     "react/no-array-index-key": "error",
     "react/no-children-prop": "off",
     "no-console": "warn",
+    "jsx-a11y/alt-text": "error",
   },
   ignorePatterns: ["src/components/ui/"],
 });

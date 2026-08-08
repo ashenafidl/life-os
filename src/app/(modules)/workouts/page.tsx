@@ -1,3 +1,3 @@
 export default function WorkoutsPage() {
-  return <div>WorkoutsPage</div>;
+  return <div className="p-4">WorkoutsPage</div>;
 }

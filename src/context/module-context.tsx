@@ -13,19 +13,27 @@ interface ModuleContextValue {
 
 export const ModuleContext = createContext<ModuleContextValue | null>(null);
 
+function moduleForPath(pathname: string): Module {
+  return (
+    modules.find((module) =>
+      navItems[module.key]?.some((item) => item.href === pathname),
+    ) ?? modules[0]
+  );
+}
+
 export function ModuleProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [activeModule, setActiveModule] = useState<Module>(modules[0]);
+  const [activeModule, setActiveModule] = useState<Module>(() =>
+    moduleForPath(pathname),
+  );
 
   // Keep the sidebar in sync with whatever route we're actually on —
   // covers direct links, browser back/forward, and the home page's
   // own router.push, without every call site needing to remember to
   // call setActiveModule itself.
   useEffect(() => {
-    const match = modules.find((module) =>
-      navItems[module.key]?.some((item) => item.href === pathname),
-    );
-    if (match && match.key !== activeModule.key) {
+    const match = moduleForPath(pathname);
+    if (match.key !== activeModule.key) {
       setActiveModule(match);
     }
     // activeModule intentionally omitted — this effect should only react to route changes.

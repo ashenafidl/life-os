@@ -11,7 +11,7 @@ type SeedBank = {
   }[];
 };
 
-export const seedData: SeedBank[] = [
+export const bankData: SeedBank[] = [
   {
     bank: {
       name: "Commercial Bank of Ethiopia",

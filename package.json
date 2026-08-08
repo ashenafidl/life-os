@@ -3,19 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
     "build": "next build && pnpm build:db-scripts",
-    "start": "next start",
+    "build:db-scripts": "esbuild src/db/migrate.ts src/db/seed.ts --bundle --platform=node --outdir=dist/db --format=cjs --external:pg-native",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/seed.ts",
-    "build:db-scripts": "esbuild src/db/migrate.ts src/db/seed.ts --bundle --platform=node --outdir=dist/db --format=cjs --external:pg-native",
-    "lint": "oxlint",
-    "lint:fix": "oxlint --fix",
+    "dev": "next dev",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "typecheck": "tsc --noEmit",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "start": "next start",
     "test": "npm run lint && npm run fmt:check && npm run typecheck",
-    "test:all": "npm run test && npm run build"
+    "test:all": "npm run test && npm run build",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

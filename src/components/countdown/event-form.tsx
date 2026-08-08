@@ -2,14 +2,14 @@
 
 import { revalidateLogic } from "@tanstack/react-form";
 
-import { createEvent } from "@/actions/countdown/actions";
+import { createEvent } from "@/actions/countdown";
 import { useDialogClose } from "@/components/shared/app-dialog";
 import { FieldGroup } from "@/components/ui/field";
 import { useAppForm } from "@/hooks/use-form";
 import { eventInsertSchema } from "@/schemas/countdown";
 
 export default function EventForm() {
-  const close = useDialogClose();
+  const closeDialog = useDialogClose();
 
   const form = useAppForm({
     defaultValues: {
@@ -21,7 +21,13 @@ export default function EventForm() {
     },
     validationLogic: revalidateLogic(),
     onSubmit: async ({ value }) => {
-      await createEvent(value);
+      const result = await createEvent(value);
+
+      if (!result.success) {
+        return;
+      }
+
+      closeDialog();
     },
   });
 
@@ -45,7 +51,7 @@ export default function EventForm() {
 
         <form.AppForm>
           <div className="flex items-center gap-2">
-            <form.ResetButton onClick={close} />
+            <form.ResetButton onClick={closeDialog} />
             <form.SubmitButton />
           </div>
         </form.AppForm>

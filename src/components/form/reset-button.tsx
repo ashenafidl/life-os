@@ -11,6 +11,7 @@ interface Props {
 
 export default function ResetButton(props: Props) {
   const form = useFormContext();
+
   return (
     <form.Subscribe selector={(state) => state.isSubmitting}>
       {(isSubmitting) => (

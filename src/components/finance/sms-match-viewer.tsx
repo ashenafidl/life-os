@@ -11,7 +11,7 @@ import FieldList from "@/components/finance/field-list";
 import HighlightedBody from "@/components/finance/highlighted-body";
 import FormattedDate from "@/components/shared/formatted-date";
 import { Card } from "@/components/ui/card";
-import { TransactionReview } from "@/lib/get-transaction-review";
+import { TransactionReview } from "@/types/transaction-review";
 
 export default function SmsMatchViewer({
   review,

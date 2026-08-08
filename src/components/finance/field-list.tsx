@@ -1,6 +1,6 @@
 import { fieldLabels, getFieldColor } from "@/components/finance/field-colors";
-import { MatchedField } from "@/lib/get-transaction-review";
 import { cn } from "@/lib/utils";
+import { MatchedField } from "@/types/transaction-review";
 
 interface Props {
   fields: MatchedField[];

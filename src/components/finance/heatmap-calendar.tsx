@@ -1,7 +1,7 @@
 import { eachDayOfInterval, format, startOfWeek, subDays } from "date-fns";
 import { useMemo } from "react";
 
-import DayTooltip from "@/components/finance/day-tooltip";
+import DayTooltip from "@/components/finance/dashboard/day-tooltip";
 import {
   HoverCard,
   HoverCardContent,
@@ -146,7 +146,7 @@ export default function HeatmapCalendar({ data }: Props) {
                     <HoverCardTrigger delay={0} closeDelay={0}>
                       <div
                         className={cn(
-                          "@container aspect-square w-full overflow-hidden rounded-xs flex items-center justify-center",
+                          "@container flex aspect-square w-full items-center justify-center overflow-hidden rounded-xs",
                           bg,
                           text,
                         )}

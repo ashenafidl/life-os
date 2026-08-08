@@ -157,6 +157,8 @@
 
   ::view-transition-new(root) {
     z-index: 2;
+    clip-path: circle(0% at var(--sweep-x, 50%) var(--sweep-y, 50%));
+    animation: theme-sweep-reveal 0.6s ease-in-out both;
   }
 
   @keyframes theme-sweep-reveal {
@@ -166,9 +168,5 @@
     to {
       clip-path: circle(150% at var(--sweep-x, 50%) var(--sweep-y, 50%));
     }
-  }
-
-  ::view-transition-new(root) {
-    animation: theme-sweep-reveal 0.6s ease-in-out;
   }
 }

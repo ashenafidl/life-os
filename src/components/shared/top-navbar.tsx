@@ -10,7 +10,7 @@ export default function TopNavbar() {
   return (
     <div
       className={cn(
-        "flex flex-row items-center justify-between border-b px-4 h-12 transition-all duration-200",
+        "flex h-12 flex-row items-center justify-between border-b px-4 transition-all duration-200",
         open && "h-16",
       )}
     >

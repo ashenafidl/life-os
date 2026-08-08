@@ -5,5 +5,10 @@ export default defineConfig({
   printWidth: 80,
   singleQuote: false,
   sortImports: true,
-  sortTailwindcss: true,
+  sortTailwindcss: {
+    functions: ["clsx", "cn", "cva", "tw"],
+  },
+  sortPackageJson: {
+    sortScripts: true,
+  },
 });

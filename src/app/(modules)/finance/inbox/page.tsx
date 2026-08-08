@@ -1,17 +1,16 @@
-import { Suspense } from "react";
-
-import InboxTable from "@/components/finance/inbox/inbox-table";
+import ActionsBar from "@/components/finance/inbox/actions-bar";
+import { inboxColumns } from "@/components/finance/inbox/columns";
+import DataTable from "@/components/table/data-table";
+import { getMessages } from "@/lib/queries/finance";
 
 export default async function InboxPage() {
+  const data = await getMessages();
+
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-full w-full items-center justify-center text-6xl">
-          Loading...
-        </div>
-      }
-    >
-      <InboxTable />
-    </Suspense>
+    <div className="p-4">
+      <DataTable columns={inboxColumns} data={data}>
+        <ActionsBar />
+      </DataTable>
+    </div>
   );
 }

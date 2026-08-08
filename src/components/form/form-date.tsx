@@ -1,4 +1,4 @@
-import { CalendarIcon } from "@phosphor-icons/react";
+import { CalendarIcon, CaretDownIcon } from "@phosphor-icons/react";
 import { format } from "date-fns";
 import { useState } from "react";
 
@@ -18,16 +18,18 @@ export default function FormDate({ ...props }: Props) {
   const field = useFieldContext<Date>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
+  const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date>(field.state.value);
 
   function handleChange(newDate: Date) {
     setDate(newDate);
     field.setValue(newDate);
+    setOpen(false);
   }
 
   return (
     <FormBase {...props}>
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           render={
             <Button
@@ -39,13 +41,17 @@ export default function FormDate({ ...props }: Props) {
           aria-invalid={isInvalid}
         >
           <CalendarIcon />
-          {date ? format(date, "PPP") : <span>Pick a date</span>}
+          <span className="grow">
+            {date ? format(date, "PPP") : "Pick a date"}
+          </span>
+          <CaretDownIcon />
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
           <Calendar
             mode="single"
             selected={date}
             onSelect={handleChange}
+            captionLayout="dropdown"
             required
           />
         </PopoverContent>

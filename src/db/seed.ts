@@ -1,11 +1,11 @@
 // oxlint-disable no-console
 import "dotenv/config";
-import { seedData } from "@/constants/seed-data";
+import { bankData } from "@/constants/bank-data";
 import { db } from "@/db/drizzle";
 import { bankPatterns, banks } from "@/db/schema/finance";
 
 async function seed() {
-  for (const item of seedData) {
+  for (const item of bankData) {
     const [row] = await db
       .insert(banks)
       .values(item.bank)
@@ -28,7 +28,7 @@ async function seed() {
     }
   }
 
-  console.log(`Seeded ${seedData.length} bank(s).`);
+  console.log(`Seeded ${bankData.length} bank(s).`);
 }
 
 seed().catch((error) => console.error("Seed failed:", error));

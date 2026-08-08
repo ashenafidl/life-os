@@ -10,6 +10,7 @@ interface Props {
 
 export default function SubmitButton(props: Props) {
   const form = useFormContext();
+
   return (
     <form.Subscribe selector={(state) => state.isSubmitting}>
       {(isSubmitting) => (
