@@ -35,7 +35,7 @@ const fieldColors: Record<
     text: "text-orange-700 dark:text-orange-400",
     border: "border-orange-500/40",
   },
-  sender: {
+  senderName: {
     bg: "bg-teal-500/15",
     text: "text-teal-700 dark:text-teal-400",
     border: "border-teal-500/40",
@@ -100,9 +100,8 @@ export const fieldLabels: Record<string, string> = {
   serviceCharge: "Service Charge",
   vat: "VAT",
   disasterRecovery: "Disaster Recovery",
-  sender: "Sender Name",
-  senderAccount: "Sender Account",
   senderName: "Sender Name",
+  senderAccount: "Sender Account",
   recipientName: "Recipient",
   recipientAccount: "Recipient Account",
   recipientPhone: "Recipient Phone",

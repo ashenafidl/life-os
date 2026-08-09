@@ -1,0 +1,2 @@
+ALTER TABLE "sms_messages" ADD COLUMN "original_message_id" uuid;--> statement-breakpoint
+ALTER TABLE "sms_messages" ADD CONSTRAINT "sms_messages_original_message_id_sms_messages_id_fkey" FOREIGN KEY ("original_message_id") REFERENCES "sms_messages"("id") ON DELETE SET NULL;

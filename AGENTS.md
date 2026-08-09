@@ -23,7 +23,7 @@ Personal "life OS" web app: Next.js 16 (App Router), React 19, TypeScript, Tailw
 
 - Dev server runs on **port 3000**.
 - `pnpm db:migrate` / `pnpm db:seed` (tsx scripts in `src/db/`) both require `DATABASE_URL` in `.env`.
-- Schema lives in `src/db/schema/`; migration SQL is committed under `./drizzle`. Add a new migration, don't rewrite existing ones.
+- Schema lives in `src/db/schema/`; migration SQL is committed under `./drizzle`. Add a new migration, don't rewrite existing ones. Generate new ones with `pnpm drizzle-kit generate` (drizzle-kit is a devDependency but not wired into package.json scripts; drizzle-orm/drizzle-kit are 1.0.0-rc).
 - `pnpm build` = `next build` + esbuild bundle of migrate/seed into `dist/db` (gitignored). The Docker entrypoint runs migrate → seed → `node server.js`, so schema changes ship as committed migration SQL.
 
 ## Architecture
@@ -31,10 +31,10 @@ Personal "life OS" web app: Next.js 16 (App Router), React 19, TypeScript, Tailw
 - Modules are a route group under `src/app/(modules)/<module>/` with a shared sidebar layout. Register new modules and nav items in `src/constants/module.ts`.
 - `typedRoutes: true` — route hrefs are type-checked; cast literal paths as `Route` from `next`.
 - Forms: @tanstack/react-form (`src/components/form/`, `src/hooks/use-form.ts`); tables: @tanstack/react-table; mutations: server actions in `src/actions/`. All wrapped in TanStack Devtools panels in `src/app/layout.tsx`.
-- `cacheComponents: true` in `next.config.ts` (Next 16 Cache Components) — caching/prerender behavior differs from older Next; read `node_modules/next/dist/docs/` before relying on it.
+- `cacheComponents` is **off** in `next.config.ts` (it was explicitly disabled) — pages render per-request with default Next 16 behavior; don't re-enable it without reading `node_modules/next/dist/docs/`.
 
 ## Runtime gotchas
 
-- `src/instrumentation.ts` (→ `instrumentation-node.ts`) publishes an mDNS `_sms-sync._tcp.local` record on boot for the SMS-sync route (`/api/sms/sync`). `bonjour-service` is in `serverExternalPackages` — keep it server-only.
+- `src/instrumentation.ts` (→ `instrumentation-node.ts`) publishes an mDNS record (`_dev-sms-sync._tcp.local` in dev, `_sms-sync._tcp.local` in prod) advertising `process.env.PORT` (default 3131) on boot for the SMS-sync route (`/api/sms/sync`). `bonjour-service` is in `serverExternalPackages` — keep it server-only.
 - Docker compose must use `network_mode: host` for that mDNS broadcast to reach the LAN; postgres maps to host port 5433.
-- CI (`.github/workflows/docker-publish.yml`) builds and pushes `ashenafidl/lifeos` on `main` and `v*.*.*` tags (Node 24, standalone output).
+- CI (`.github/workflows/docker-publish.yml`) builds and pushes `ashenafidl/lifeos` (Node 24, standalone) on `main` and `v*.*.*` tags. `.github/workflows/release.yml` auto-creates those `v*` tags on `main` pushes from commit messages (`BREAKING CHANGE` → major, `feat` → minor), so every merge to `main` triggers a Docker publish.

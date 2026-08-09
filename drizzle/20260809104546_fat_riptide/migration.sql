@@ -1,0 +1,1 @@
+ALTER TYPE "sms_status" ADD VALUE 'duplicate' BEFORE 'unmatched';

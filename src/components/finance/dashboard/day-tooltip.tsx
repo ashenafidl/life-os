@@ -121,7 +121,7 @@ export default async function DayTooltip({ day }: Props) {
                 {formatMoney(row.transaction.amount)}
               </p>
               <p className="text-muted-foreground">
-                {format(row.transaction.occurredAt ?? "", "h:mm a")}
+                {format(row.transaction.occurredAt ?? "", "HH:mm")}
               </p>
             </div>
             <div className="text-muted-foreground col-span-2 flex justify-between">

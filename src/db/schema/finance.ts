@@ -12,6 +12,7 @@ import {
 export const smsStatusEnum = pgEnum("sms_status", [
   "pending",
   "parsed",
+  "duplicate",
   "unmatched",
 ]);
 
@@ -23,17 +24,22 @@ export const transactionTypeEnum = pgEnum("transaction_type", [
 export const smsMessages = pgTable("sms_messages", {
   id: uuid("id").primaryKey().defaultRandom(),
   smsId: integer("sms_id").notNull(),
-  address: text("sender").notNull(),
+  address: text("address").notNull(),
   body: text("body").notNull(),
   date: timestamp("received_at").notNull(), // when the phone received it
-  rawHash: text("raw_hash").notNull().unique(), // sha256(sender+body+receivedAt), for dedup
+  rawHash: text("raw_hash").notNull().unique(), // sha256(address+body+receivedAt), for dedup
 
   // "pending" until a parse attempt runs. "parsed" once a transaction row
-  // exists for it. "unmatched" means we tried and no pattern fit — could be
+  // exists for it — the first message parsed for a transaction is the
+  // "original". "duplicate" means another message for the same transaction
+  // was already parsed: some banks send two messages (from different address
+  // IDs) per transaction, and only the first one owns a transaction row —
+  // the duplicates' missing info (e.g. tnxId) is merged into that original.
+  // "unmatched" means we tried and no pattern fit — could be
   // a non-transaction sms (promo, OTP) or a real transaction in a format we
   // don't have a regex for yet. bankId lets a review screen tell those apart:
   // unmatched + bankId set = "known bank, need a new/fixed regex";
-  // unmatched + bankId null = "sender we don't recognize at all, probably not a bank".
+  // unmatched + bankId null = "address we don't recognize at all, probably not a bank".
   status: smsStatusEnum("status").notNull().default("pending"),
   bankId: uuid("bank_id").references(() => banks.id, { onDelete: "set null" }),
 
@@ -78,7 +84,7 @@ export const transactions = pgTable("transactions", {
     .references(() => bankPatterns.id),
   type: transactionTypeEnum("type"),
   tnxId: text("tnx_id").unique(),
-  sender: text("sender"),
+  senderName: text("sender_name"),
   senderAccount: text("sender_account"),
   recipientName: text("recipient_name"),
   recipientPhone: text("recipient_phone"),

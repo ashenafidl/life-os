@@ -14,6 +14,10 @@ const statusConfig: Record<SmsStatus, { label: string; className: string }> = {
     className:
       "bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:text-emerald-400",
   },
+  duplicate: {
+    label: "Duplicate",
+    className: "bg-sky-500/15 text-sky-600 border-sky-500/30 dark:text-sky-400",
+  },
   unmatched: {
     label: "Unmatched",
     className:
