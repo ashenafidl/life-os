@@ -1,0 +1,34 @@
+name: Release (SemVer + Tag)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need full history for semver
+
+      - name: Determine next version
+        id: versioning
+        uses: paulhatch/semantic-version@v5
+        with:
+          tag_prefix: "v"
+          major_pattern: "BREAKING CHANGE"
+          minor_pattern: "feat"
+          version_format: "${MAJOR}.${MINOR}.${PATCH}"
+
+      - name: Create Git tag if new version
+        if: ${{ steps.versioning.outputs.version_changed == 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "v${{ steps.versioning.outputs.version }}"
+          git push origin "v${{ steps.versioning.outputs.version }}"
