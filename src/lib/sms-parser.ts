@@ -232,6 +232,7 @@ function toTransactionValues(
     senderName: groups.senderName,
     senderAccount: groups.senderAccount,
     recipientName: groups.recipientName,
+    recipientAccount: groups.recipientAccount,
     recipientPhone: groups.recipientPhone,
     senderPhone: groups.senderPhone,
     amount: stripCommas(groups.amount),
@@ -266,10 +267,11 @@ function sameTransaction(
 
   const sharedFields: [string | null | undefined, string | null | undefined][] =
     [
-      [existing.recipientPhone, values.recipientPhone],
       [existing.senderPhone, values.senderPhone],
-      [existing.recipientName, values.recipientName],
       [existing.senderAccount, values.senderAccount],
+      [existing.recipientName, values.recipientName],
+      [existing.recipientAccount, values.recipientAccount],
+      [existing.recipientPhone, values.recipientPhone],
       [existing.reference, values.reference],
     ];
 
@@ -367,6 +369,7 @@ function mergeTransactionValues(
     "senderName",
     "senderAccount",
     "recipientName",
+    "recipientAccount",
     "recipientPhone",
     "senderPhone",
     "reference",

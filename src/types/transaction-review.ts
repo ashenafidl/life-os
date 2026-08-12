@@ -7,19 +7,12 @@ export interface MatchedField {
   end: number;
 }
 
-export interface TransactionReviewMessage {
-  id: string;
-  status: SmsMessageStatus;
-  body: string;
-  isOriginal: boolean;
-  fields: MatchedField[];
-}
-
 export interface TransactionReview {
   transaction: typeof transactions.$inferSelect;
   bankName: string;
+  body: string;
+  fields: MatchedField[];
   pattern: typeof bankPatterns.$inferSelect;
-  messages: TransactionReviewMessage[];
 }
 
 export type SmsMessageStatus = (typeof smsMessages.$inferSelect)["status"];
