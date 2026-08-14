@@ -53,7 +53,7 @@ export default function FilterEditor({
   };
 
   return (
-    <div className="bg-popover flex flex-wrap items-stretch gap-x-6 gap-y-3 p-4 rounded-xl">
+    <div className="bg-popover flex flex-wrap items-stretch gap-x-6 gap-y-3 rounded-xl p-4">
       <div className="flex flex-col gap-2">
         {conditions.map((condition, index) => {
           const fieldConfig =
