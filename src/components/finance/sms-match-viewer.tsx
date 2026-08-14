@@ -16,7 +16,7 @@ export default function SmsMatchViewer({
   const [active, setActive] = useState<string>();
 
   return (
-    <Card className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2">
+    <Card className="grid grid-cols-1 gap-4 rounded-none p-4 first:rounded-t-xl last:rounded-b-xl md:grid-cols-2">
       <div>
         <p className="text-muted-foreground mb-2 flex items-center gap-2 text-xs tracking-wide uppercase">
           <span>

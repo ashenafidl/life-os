@@ -12,7 +12,7 @@ if (!globalThis.__bonjourPublished) {
 
   bonjour.publish({
     name: "SMS Sync Server",
-    type: `${process.env.NODE_ENV === "development" ? "dev" : ""}-sms-sync`, // advertised as _sms-sync._tcp.local
+    type: `${process.env.NODE_ENV === "development" ? "dev-" : ""}sms-sync`, // advertised as _sms-sync._tcp.local
     port,
     disableIPv6: true,
   });
@@ -29,6 +29,6 @@ if (!globalThis.__bonjourPublished) {
 
   // oxlint-disable-next-line no-console
   console.log(
-    `[mdns] Advertising as _${process.env.NODE_ENV === "development" ? "dev" : ""}-sms-sync._tcp.local on port ${port}`,
+    `[mdns] Advertising as _${process.env.NODE_ENV === "development" ? "dev-" : ""}sms-sync._tcp.local on port ${port}`,
   );
 }

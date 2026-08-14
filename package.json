@@ -7,6 +7,7 @@
     "build:db-scripts": "esbuild src/db/migrate.ts src/db/seed.ts --bundle --platform=node --outdir=dist/db --format=cjs --external:pg-native",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/seed.ts",
+    "db:studio": "drizzle-kit studio",
     "dev": "next dev",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
