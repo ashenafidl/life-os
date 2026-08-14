@@ -3,7 +3,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
 import { HotkeysDevtoolsPanel } from "@tanstack/react-hotkeys-devtools";
 import type { Metadata } from "next";
-import { Figtree, Lora } from "next/font/google";
+import { Figtree, IBM_Plex_Mono, Lora } from "next/font/google";
 
 import BreakpointIndicator from "@/components/shared/breakpoint-indicator";
 import ThemeProvider from "@/components/theme-provider";
@@ -13,6 +13,11 @@ import { cn } from "@/lib/utils";
 
 const loraHeading = Lora({ subsets: ["latin"], variable: "--font-heading" });
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["100", "200", "300", "400", "500", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: "LifeOS",
@@ -32,6 +37,7 @@ export default function RootLayout({
         "font-sans",
         figtree.variable,
         loraHeading.variable,
+        ibmPlexMono.variable,
       )}
       suppressHydrationWarning
     >

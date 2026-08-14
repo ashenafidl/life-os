@@ -1,5 +1,5 @@
 import { CalendarIcon, CaretDownIcon } from "@phosphor-icons/react";
-import { format } from "date-fns";
+import { format, startOfDay } from "date-fns";
 import { useState } from "react";
 
 import FormBase, { FormControlProps } from "@/components/form/base";
@@ -17,6 +17,8 @@ interface Props extends FormControlProps {}
 export default function FormDate({ ...props }: Props) {
   const field = useFieldContext<Date>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+
+  const today = startOfDay(new Date());
 
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date>(field.state.value);
@@ -50,9 +52,14 @@ export default function FormDate({ ...props }: Props) {
           <Calendar
             mode="single"
             selected={date}
-            onSelect={handleChange}
+            onSelect={(newDate) => {
+              if (newDate) handleChange(newDate);
+            }}
             captionLayout="dropdown"
             required
+            reverseYears
+            reverseMonths
+            defaultMonth={date ?? today}
           />
         </PopoverContent>
       </Popover>
