@@ -1,5 +1,6 @@
 "use client";
 
+import { VariantProps } from "class-variance-authority";
 import {
   createContext,
   type ReactElement,
@@ -8,6 +9,18 @@ import {
   useState,
 } from "react";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -32,9 +45,13 @@ interface Props {
   trigger?: ReactNode;
   title: string;
   description?: string;
-  children: ReactNode;
+  children?: ReactNode;
   open?: boolean;
+  variant?: "dialog" | "alert";
   onOpenChange?: (open: boolean) => void;
+  confirmLabel?: string;
+  onConfirm?: () => void;
+  confirmVariant?: VariantProps<typeof buttonVariants>["variant"];
 }
 
 export default function AppDialog({
@@ -43,12 +60,49 @@ export default function AppDialog({
   description,
   children,
   open,
+  variant = "dialog",
   onOpenChange,
+  confirmLabel = "Continue",
+  onConfirm,
+  confirmVariant = "default",
 }: Props) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = open ?? internalOpen;
   const setOpen = onOpenChange ?? setInternalOpen;
   const close = () => setOpen(false);
+
+  const body = (
+    <DialogCloseContext.Provider value={close}>
+      {children}
+    </DialogCloseContext.Provider>
+  );
+
+  if (variant === "alert") {
+    return (
+      <AlertDialog open={isOpen} onOpenChange={setOpen}>
+        {trigger && (
+          <AlertDialogTrigger
+            render={trigger as ReactElement}
+            nativeButton={false}
+          />
+        )}
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{title}</AlertDialogTitle>
+            {description && (
+              <AlertDialogDescription>{description}</AlertDialogDescription>
+            )}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction variant={confirmVariant} onClick={onConfirm}>
+              {confirmLabel}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setOpen}>
@@ -60,9 +114,7 @@ export default function AppDialog({
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
-        <DialogCloseContext.Provider value={close}>
-          {children}
-        </DialogCloseContext.Provider>
+        {body}
       </DialogContent>
     </Dialog>
   );

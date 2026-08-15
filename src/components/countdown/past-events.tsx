@@ -21,7 +21,7 @@ export default function PastEvents({ pastEvents }: Props) {
           Past events ({pastEvents.length})
         </AccordionTrigger>
         <AccordionContent className="px-4 pb-4">
-          <div className="grid grid-cols-1 gap-4 pt-2 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 pt-2 md:grid-cols-2 xl:grid-cols-5">
             {pastEvents.map((countdown) => (
               <CountdownCard key={countdown.id} countdown={countdown} isPast />
             ))}

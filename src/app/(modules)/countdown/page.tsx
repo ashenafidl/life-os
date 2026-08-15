@@ -19,7 +19,7 @@ export default async function CountdownPage() {
 
   return (
     <div className="space-y-4 p-4">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
         {upcoming.map((countdown) => (
           <CountdownCard key={countdown.id} countdown={countdown} />
         ))}

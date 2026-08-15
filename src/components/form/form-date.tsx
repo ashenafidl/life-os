@@ -1,6 +1,7 @@
 import { CalendarIcon, CaretDownIcon } from "@phosphor-icons/react";
 import { format, startOfDay } from "date-fns";
 import { useState } from "react";
+import { DayPickerProps } from "react-day-picker";
 
 import FormBase, { FormControlProps } from "@/components/form/base";
 import { Button } from "@/components/ui/button";
@@ -12,9 +13,19 @@ import {
 } from "@/components/ui/popover";
 import { useFieldContext } from "@/hooks/use-form";
 
-interface Props extends FormControlProps {}
+type CalendarPassthroughProps = Pick<
+  DayPickerProps,
+  "disabled" | "startMonth" | "endMonth"
+>;
 
-export default function FormDate({ ...props }: Props) {
+interface Props extends FormControlProps, CalendarPassthroughProps {}
+
+export default function FormDate({
+  disabled,
+  startMonth,
+  endMonth,
+  ...props
+}: Props) {
   const field = useFieldContext<Date>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
@@ -50,16 +61,15 @@ export default function FormDate({ ...props }: Props) {
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
           <Calendar
+            required
             mode="single"
             selected={date}
-            onSelect={(newDate) => {
-              if (newDate) handleChange(newDate);
-            }}
+            onSelect={handleChange}
             captionLayout="dropdown"
-            required
-            reverseYears
-            reverseMonths
             defaultMonth={date ?? today}
+            disabled={disabled}
+            startMonth={startMonth}
+            endMonth={endMonth}
           />
         </PopoverContent>
       </Popover>
