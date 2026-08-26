@@ -14,6 +14,21 @@ export default async function BalanceCards() {
   const { balances, total } = await getBankBalances();
   const visibleBalances = balances.filter((item) => item.balance);
 
+  // Empty state — no banks with a balance to show
+  if (visibleBalances.length === 0) {
+    return (
+      <Card className="flex w-full flex-col items-center justify-center gap-2 border-dashed py-10 text-center">
+        <CardContent className="flex flex-col items-center gap-2 pt-0">
+          <WalletIcon className="text-muted-foreground/60 size-8" />
+          <h1 className="font-heading text-xl">No balances yet</h1>
+          <p className="text-muted-foreground text-sm">
+            Sync sms messages with real transaction to see your balances.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="flex scrollbar-none items-stretch gap-4 overflow-x-auto py-0.5">
       {/* Total balance + divider — sticky so they stay visible while
@@ -36,7 +51,7 @@ export default async function BalanceCards() {
 
           <CardFooter>
             <div className="text-xs opacity-70">
-              Across {visibleBalances.length} bank
+              Across {visibleBalances.length} bank{" "}
               {visibleBalances.length !== 1 ? "s" : ""}
             </div>
           </CardFooter>
@@ -49,7 +64,6 @@ export default async function BalanceCards() {
           className="w-full shrink-0 shadow-none sm:w-[320px] lg:w-90"
         >
           <CardHeader>{balance.bankName}</CardHeader>
-
           <CardContent>
             <div className="flex items-end gap-2">
               <h1 className="font-heading text-5xl">
@@ -58,7 +72,6 @@ export default async function BalanceCards() {
               <span className="text-muted-foreground text-lg">ETB</span>
             </div>
           </CardContent>
-
           <CardFooter>
             <div className="text-muted-foreground text-xs">
               <FormattedDate date={balance.asOf ?? new Date()} />
