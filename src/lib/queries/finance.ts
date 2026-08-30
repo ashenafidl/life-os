@@ -52,7 +52,7 @@ export const getBankBalances = cache(async () => {
       balance: latest ? Number(latest.balanceAfter) : null, // null = no known balance yet
       asOf: latest?.occurredAt ?? null,
     };
-  });
+  }).sort((a, b) => (b.balance ?? 0) - (a.balance ?? 0));
 
   const total = balances.reduce((sum, b) => sum + (b.balance ?? 0), 0);
 

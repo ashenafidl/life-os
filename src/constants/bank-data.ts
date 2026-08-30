@@ -48,6 +48,18 @@ export const bankData: SeedBank[] = [
         regex:
           "Dear\\s+(?<recipientName>.+?)\\s+you\\s+have\\s+received\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d+)\\s+from\\s+account\\s+(?<senderAccount>\\d+\\*{1,}\\d+)\\s+\\((?<senderName>.+?)\\)\\s+to\\s+your\\s+account\\s+(?<recipientAccount>\\d+\\*{1,}\\d+).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s?(?<balanceAfter>[\\d,]+\\.\\d+)\\..*?(?<reference>https:\\/\\/\\S+)",
       },
+      {
+        label: "Incoming Transfer",
+        type: "income",
+        regex:
+          "Dear\\s+Mr\\s+(?<recipientName>.+?).your\\s+account\\s+(?<recipientAccount>\\d+\\*{1,}\\d+)\\s+has\\s+been\\s+credited\\s+by\\s+(?<senderName>.+?)with\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d+).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+).*for reciept\\s+(?<reference>https:\\/\\/\\S+)",
+      },
+      {
+        label: "Incoming transfer",
+        type: "income",
+        regex:
+          "Dear\\s+(?<recipientName>.+?),\\s+you\\s+have\\s+received\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d+)\\s+to\\s+your\\s+account\\s+(?<recipientAccount>\\d+\\*{1,}\\d+)\\s+from\\s+(?<senderName>.+?)\\s+account\\s+(?<senderAccount>\\d+\\*{1,}\\d+)\\s+on\\s+(?<date>[A-Z][a-z]{2}\\s+\\d{1,2},\\s+\\d{4})\\s+(?<time>\\d{2}:\\d{2}:\\d{2}\\s(?:AM|PM)).\\s+CBE\\s+txn\\s+ID:\\s+(?<tnxID>[a-zA-Z0-9]+).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+).*receipt\\s+here:\\s+(?<reference>https:\\/\\/\\S+)",
+      },
     ],
   },
   {
@@ -117,6 +129,12 @@ export const bankData: SeedBank[] = [
         type: "income",
         regex:
           "your\\s+account\\s+'(?<recipientAccount>\\d+\\*{1,}\\d+)'\\s+is\\s+credited\\s+with\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d+)\\s+from\\s+(?<senderName>.+?)\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+at\\s+(?<time>\\d{2}:\\d{2}:\\d{2}\\s(?:AM|PM)).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+)",
+      },
+      {
+        label: "Outgoing transfer to Dashen Bank",
+        type: "expense",
+        regex:
+          "Dear\\s+(?<senderName>[A-Za-z\\s]+?),\\s+you\\s+have\\s+successfully\\s+transferred\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d{2})\\s+from\\s+your\\s+account\\s+number\\s+(?<senderAccount>\\d+\\*+\\d+)\\s+to\\s+(?<recipientName>[A-Za-z\\s]+?)'s\\s+account\\s+number\\s+(?<recipientAccount>\\d+\\*+\\d+)\\s+on\\s+(?<date>\\d{4}-\\d{2}-\\d{2})\\s+at\\s+(?<time>\\d{2}:\\d{2}:\\d{2})\\s+with\\s+transaction\\s+reference:\\s+(?<tnxID>[A-Za-z0-9]+)\\.\\s+The\\s+service\\s+charge\\s+is\\s+ETB\\s+(?<serviceCharge>[\\d,]+\\.\\d{2}),\\s+VAT\\s+\\(15%\\)\\s+ETB\\s+(?<vat>[\\d,]+\\.\\d{2})\\s+and\\s+DRRF\\s+\\(5%\\)\\s+ETB\\s+(?<disasterRecovery>[\\d,]+\\.\\d{2})\\.\\s+Your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d{2})\\.\\s+Download\\s+receipt:\\s+=\\s+\\[?(?<reference>https:\\/\\/\\S+)\\.",
       },
     ],
   },

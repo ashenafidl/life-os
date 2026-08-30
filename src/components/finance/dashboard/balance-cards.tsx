@@ -51,7 +51,7 @@ export default async function BalanceCards() {
 
           <CardFooter>
             <div className="text-xs opacity-70">
-              Across {visibleBalances.length} bank{" "}
+              Across {visibleBalances.length} bank
               {visibleBalances.length !== 1 ? "s" : ""}
             </div>
           </CardFooter>
