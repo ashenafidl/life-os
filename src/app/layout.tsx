@@ -2,6 +2,7 @@ import "./globals.css";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
 import { HotkeysDevtoolsPanel } from "@tanstack/react-hotkeys-devtools";
+import { cn } from "cn";
 import type { Metadata } from "next";
 import { Figtree, IBM_Plex_Mono, Lora } from "next/font/google";
 
@@ -9,7 +10,6 @@ import BreakpointIndicator from "@/components/shared/breakpoint-indicator";
 import ThemeProvider from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ModuleProvider } from "@/context/module-context";
-import { cn } from "@/lib/utils";
 
 const loraHeading = Lora({ subsets: ["latin"], variable: "--font-heading" });
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });

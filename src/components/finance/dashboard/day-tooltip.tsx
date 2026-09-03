@@ -1,10 +1,10 @@
+import { cn } from "cn";
 import { addDays, format, startOfDay } from "date-fns";
 import { and, eq, gte, lt } from "drizzle-orm";
 
 import { db } from "@/db/drizzle";
 import { banks, transactions } from "@/db/schema/finance";
 import formatMoney from "@/lib/money-utils";
-import { cn } from "@/lib/utils";
 
 interface Props {
   day: Date;

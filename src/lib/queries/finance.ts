@@ -44,15 +44,17 @@ export const getBankBalances = cache(async () => {
 
   const allBanks = await db.select().from(banks);
 
-  const balances = allBanks.map((bank) => {
-    const latest = latestPerBank.find((t) => t.bankId === bank.id);
-    return {
-      bankId: bank.id,
-      bankName: bank.name,
-      balance: latest ? Number(latest.balanceAfter) : null, // null = no known balance yet
-      asOf: latest?.occurredAt ?? null,
-    };
-  }).sort((a, b) => (b.balance ?? 0) - (a.balance ?? 0));
+  const balances = allBanks
+    .map((bank) => {
+      const latest = latestPerBank.find((t) => t.bankId === bank.id);
+      return {
+        bankId: bank.id,
+        bankName: bank.name,
+        balance: latest ? Number(latest.balanceAfter) : null, // null = no known balance yet
+        asOf: latest?.occurredAt ?? null,
+      };
+    })
+    .sort((a, b) => (b.balance ?? 0) - (a.balance ?? 0));
 
   const total = balances.reduce((sum, b) => sum + (b.balance ?? 0), 0);
 

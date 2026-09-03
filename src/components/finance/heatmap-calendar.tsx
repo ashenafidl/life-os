@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import { eachDayOfInterval, format, startOfWeek, subDays } from "date-fns";
 import { useMemo } from "react";
 
@@ -8,7 +9,6 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import formatMoney from "@/lib/money-utils";
-import { cn } from "@/lib/utils";
 
 const WEEK_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
 

@@ -1,10 +1,10 @@
+import { cn } from "cn";
 import { format } from "date-fns";
 import { ReactNode } from "react";
 
 import { fieldLabels, getFieldColor } from "@/components/finance/field-colors";
 import { transactions } from "@/db/schema/finance";
 import formatMoney from "@/lib/money-utils";
-import { cn } from "@/lib/utils";
 
 type Transaction = typeof transactions.$inferSelect;
 

@@ -5,6 +5,7 @@ import {
   PencilSimpleIcon,
   TrashSimpleIcon,
 } from "@phosphor-icons/react";
+import { cn } from "cn";
 import { useState } from "react";
 
 import { deleteEvent } from "@/actions/countdown";
@@ -27,7 +28,6 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { formatDate } from "@/lib/date-utils";
-import { cn } from "@/lib/utils";
 
 export default function CountdownCard({
   countdown,

@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -7,7 +8,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { cn } from "@/lib/utils";
 
 export default function DataTableLongTextCell({ text }: { text: string }) {
   const spanRef = useRef<HTMLSpanElement>(null);

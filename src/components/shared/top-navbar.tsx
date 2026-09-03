@@ -1,8 +1,9 @@
 "use client";
 
+import { cn } from "cn";
+
 import ThemeSwitcher from "@/components/shared/theme-switcher";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
 
 export default function TopNavbar() {
   const { open } = useSidebar();

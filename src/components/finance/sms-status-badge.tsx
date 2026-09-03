@@ -1,6 +1,7 @@
+import { cn } from "cn";
+
 import { Badge } from "@/components/ui/badge";
 import { smsStatusEnum } from "@/db/schema/finance";
-import { cn } from "@/lib/utils";
 
 type SmsStatus = (typeof smsStatusEnum.enumValues)[number];
 

@@ -7,6 +7,7 @@ import {
   XIcon,
 } from "@phosphor-icons/react";
 import type { Column } from "@tanstack/react-table";
+import { cn } from "cn";
 
 import {
   DropdownMenu,
@@ -15,7 +16,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
 
 interface DataTableColumnHeaderProps<
   TData,
