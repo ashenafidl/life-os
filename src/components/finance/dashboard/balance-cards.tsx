@@ -34,7 +34,7 @@ export default async function BalanceCards() {
       {/* Total balance + divider — sticky so they stay visible while
           individual bank cards scroll underneath */}
       <div className="bg-background ring-background sticky left-0 z-10 flex shrink-0 items-stretch border-r pr-4 ring-1">
-        <Card className="from-primary to-primary text-primary-foreground border-primary w-full bg-linear-to-br sm:w-[320px] lg:w-90">
+        <Card className="from-primary to-primary text-primary-foreground border-primary w-fit bg-linear-to-br">
           <CardHeader className="flex items-center justify-between">
             <span>Total Balance</span>
             <WalletIcon className="size-5 opacity-80" />
@@ -61,7 +61,7 @@ export default async function BalanceCards() {
       {visibleBalances.map((balance) => (
         <Card
           key={balance.bankId}
-          className="w-full shrink-0 shadow-none sm:w-[320px] lg:w-90"
+          className="w-full max-w-fit shrink-0 shadow-none sm:w-[320px] lg:min-w-90"
         >
           <CardHeader>{balance.bankName}</CardHeader>
           <CardContent>

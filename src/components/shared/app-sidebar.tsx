@@ -43,8 +43,12 @@ export default function AppSidebar() {
     return isMobile ? setOpenMobile(!openMobile) : setOpen(!open);
   }, [isMobile, setOpen, setOpenMobile, open, openMobile]);
 
-  useHotkey("M", () => {
-    toggleSidebar();
+  useHotkey("M", () => toggleSidebar(), {
+    meta: {
+      name: "Toggle Sidebar",
+      description: "Toggle the sidebar visibility",
+      group: "General",
+    },
   });
 
   const handleModuleChange = (module: Module) => {
@@ -126,6 +130,7 @@ export default function AppSidebar() {
                 <SidebarMenuButton
                   render={<Link href={item.href} />}
                   isActive={pathname === item.href}
+                  tooltip={item.label}
                 >
                   <item.icon />
                   <span>{item.label}</span>

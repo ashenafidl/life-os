@@ -17,4 +17,4 @@ minimumReleaseAgeExclude:
   - next@16.3.0-canary.76 || 16.3.1 || 16.3.2
 overrides:
   "@types/react": 19.2.18
-  "@types/react-dom": 19.2.5
+  "@types/react-dom": 19.2.7

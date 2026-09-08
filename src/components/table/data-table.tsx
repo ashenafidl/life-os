@@ -27,6 +27,7 @@ export default function DataTable<TData, TValue = any>({
   data,
   children,
 }: Props<TData, TValue>) {
+  // oxlint-disable-next-line react/incompatible-library
   const table = useReactTable({
     columns,
     data,
