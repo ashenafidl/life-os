@@ -1,5 +1,5 @@
-declare module '@tanstack/hotkeys' {
+declare module "@tanstack/hotkeys" {
   interface HotkeyMeta {
-    group?: string
+    group?: string;
   }
 }

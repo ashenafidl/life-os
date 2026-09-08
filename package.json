@@ -5,6 +5,8 @@
   "scripts": {
     "build": "next build && pnpm build:db-scripts",
     "build:db-scripts": "esbuild src/db/migrate.ts src/db/seed.ts --bundle --platform=node --outdir=dist/db --format=cjs --external:pg-native",
+    "check": "pnpm run lint && pnpm run fmt:check && pnpm run typecheck",
+    "check:all": "pnpm run check && pnpm run build",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/seed.ts",
     "db:studio": "drizzle-kit studio",
@@ -13,9 +15,8 @@
     "fmt:check": "oxfmt --check",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
+    "prepare": "husky",
     "start": "next start",
-    "test": "npm run lint && npm run fmt:check && npm run typecheck",
-    "test:all": "npm run test && npm run build",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -54,11 +55,22 @@
     "@types/react-dom": "19.2.7",
     "drizzle-kit": "1.0.0-rc.4",
     "esbuild": "^0.28.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.0",
     "oxfmt": "^0.57.0",
     "oxlint": "^1.81.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": [
+      "oxfmt --no-error-on-unmatched-pattern",
+      "oxlint --fix"
+    ],
+    "*.{json,jsonc,md,mdx,css,scss}": [
+      "oxfmt --no-error-on-unmatched-pattern"
+    ]
   },
   "packageManager": "pnpm@12.3.4+sha512.961aa41fb077da3a04a441d9f8e15ebc0c96da8ef710b2eb67bf9ee7cb0610eabd48f1fd85f51cffe73846785fa0f87c56a3a872a1d893f8446741b5cce45457"
 }
