@@ -1,12 +1,14 @@
 "use client";
 
 import { KeyboardIcon } from "@phosphor-icons/react";
-import { formatForDisplay } from "@tanstack/hotkeys";
-import { useHotkeyRegistrations } from "@tanstack/react-hotkeys";
+import {
+  formatForDisplay,
+  useHotkeyRegistrations,
+} from "@tanstack/react-hotkeys";
 
 import { Kbd } from "@/components/ui/kbd";
 
-export default function KbdShortcutsList() {
+export default function HotkeysList() {
   const { hotkeys } = useHotkeyRegistrations();
 
   const groups = hotkeys.reduce<Record<string, typeof hotkeys>>((acc, reg) => {

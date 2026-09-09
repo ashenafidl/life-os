@@ -4,7 +4,6 @@ import { CaretUpDownIcon } from "@phosphor-icons/react";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback } from "react";
 
 import {
   DropdownMenu,
@@ -25,23 +24,17 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { modules, navItems } from "@/constants/module";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useModule } from "@/hooks/use-module";
 import { Module } from "@/types/module";
 
 export default function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const isMobile = useIsMobile();
-  const { open, setOpen, setOpenMobile, openMobile } = useSidebar();
+  const { toggleSidebar } = useSidebar();
 
   const { activeModule, setActiveModule } = useModule();
 
   const items = navItems[activeModule.key] ?? [];
-
-  const toggleSidebar = useCallback(() => {
-    return isMobile ? setOpenMobile(!openMobile) : setOpen(!open);
-  }, [isMobile, setOpen, setOpenMobile, open, openMobile]);
 
   useHotkey("M", () => toggleSidebar(), {
     meta: {

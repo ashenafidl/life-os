@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import { Figtree, IBM_Plex_Mono, Lora } from "next/font/google";
 
 import BreakpointIndicator from "@/components/shared/breakpoint-indicator";
-import KbdShortcutHelper from "@/components/shared/kbd-shortcut-helper";
+import HotkeysSheet from "@/components/shared/hotkeys-sheet";
 import ThemeProvider from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ModuleProvider } from "@/context/module-context";
@@ -53,7 +53,7 @@ export default function RootLayout({
             <ModuleProvider>
               {children}
 
-              <KbdShortcutHelper />
+              <HotkeysSheet />
 
               <TanStackDevtools
                 plugins={[

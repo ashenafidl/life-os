@@ -1,9 +1,9 @@
 "use client";
 
-import { useHotkey } from "@tanstack/react-hotkeys";
-import { useState } from "react";
+import { getHotkeyManager } from "@tanstack/react-hotkeys";
+import { useCallback, useEffect, useState } from "react";
 
-import KbdShortcutsList from "@/components/shared/kbd-shortcuts-list";
+import HotkeysList from "@/components/shared/hotkeys-list";
 import {
   Sheet,
   SheetContent,
@@ -12,20 +12,26 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
-export default function KbdShortcutHelper() {
+export default function HotkeysSheet() {
   const [open, setOpen] = useState(false);
 
-  const toggleOpen = () => {
+  const toggleOpen = useCallback(() => {
     setOpen((prev) => !prev);
-  };
+  }, []);
 
-  useHotkey("I", () => toggleOpen(), {
-    meta: {
-      name: "Shortcuts Helper",
-      description: "Open keyboard shortcuts help",
-      group: "General",
-    },
-  });
+  useEffect(() => {
+    const handle = getHotkeyManager().register("I", toggleOpen, {
+      meta: {
+        name: "Shortcuts Helper",
+        description: "Open keyboard shortcuts help",
+        group: "General",
+      },
+    });
+
+    return () => {
+      handle.unregister();
+    };
+  }, [toggleOpen]);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -38,7 +44,7 @@ export default function KbdShortcutHelper() {
         </SheetHeader>
 
         <div className="no-scrollbar overflow-y-auto px-4">
-          <KbdShortcutsList />
+          <HotkeysList />
         </div>
       </SheetContent>
     </Sheet>
