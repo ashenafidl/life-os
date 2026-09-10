@@ -32,7 +32,12 @@ async function seedBanksAndPatterns() {
           .values({ bankId: row.id, ...pattern })
           .onConflictDoUpdate({
             target: [bankPatterns.bankId, bankPatterns.label],
-            set: { regex: pattern.regex, type: pattern.type },
+            set: {
+              regex: pattern.regex,
+              type: pattern.type,
+              dateFormat: pattern.dateFormat,
+              timeFormat: pattern.timeFormat,
+            },
           });
       }
     }

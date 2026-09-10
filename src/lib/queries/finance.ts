@@ -79,14 +79,16 @@ export const getDailyTotals = cache(
         day: sql<string>`to_char(${transactions.occurredAt}, 'YYYY-MM-DD')`,
         net: sql<string>`sum(
         case when ${transactions.type} = 'income'
-          then ${transactions.amount}
-          else -${transactions.amount}
+          then ${transactions.totalAmount}
+          else -${transactions.totalAmount}
         end
       )`,
       })
       .from(transactions)
+      .innerJoin(smsMessages, eq(transactions.smsMessageId, smsMessages.id))
       .where(
         and(
+          eq(smsMessages.status, "parsed"),
           gte(transactions.occurredAt, from),
           lt(transactions.occurredAt, to),
         ),

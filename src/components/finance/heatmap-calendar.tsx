@@ -1,5 +1,5 @@
 import { cn } from "cn";
-import { eachDayOfInterval, format, startOfWeek, subDays } from "date-fns";
+import { eachDayOfInterval, format } from "date-fns";
 import { useMemo } from "react";
 
 import DayTooltip from "@/components/finance/dashboard/day-tooltip";
@@ -67,14 +67,12 @@ function getIntensityClass(value: number, maxAbs: number): ColorStep {
 
 interface Props {
   data: Record<string, number>;
+  gridStart: Date;
+  gridEnd: Date;
 }
 
-export default function HeatmapCalendar({ data }: Props) {
+export default function HeatmapCalendar({ data, gridStart, gridEnd }: Props) {
   const { weeks, monthLabels } = useMemo(() => {
-    const gridEnd = new Date();
-    const gridStart = startOfWeek(subDays(gridEnd, 53 * 7 - 1), {
-      weekStartsOn: 1,
-    });
     const allDays = eachDayOfInterval({ start: gridStart, end: gridEnd });
 
     const weeks: Date[][] = [];
@@ -91,7 +89,7 @@ export default function HeatmapCalendar({ data }: Props) {
     });
 
     return { weeks, monthLabels };
-  }, []);
+  }, [gridStart, gridEnd]);
 
   const max = Math.max(0, ...Object.values(data).map(Math.abs));
   const columnStyle = {
@@ -143,7 +141,7 @@ export default function HeatmapCalendar({ data }: Props) {
                 );
                 return (
                   <HoverCard key={day.toISOString()}>
-                    <HoverCardTrigger delay={0} closeDelay={0}>
+                    <HoverCardTrigger closeDelay={0}>
                       <div
                         className={cn(
                           "@container flex aspect-square w-full items-center justify-center overflow-hidden rounded-xs",

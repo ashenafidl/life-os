@@ -9,7 +9,7 @@ import {
   smsMessages,
   transactions,
 } from "@/db/schema/finance";
-import { toEpoch } from "@/lib/date-utils";
+import { extractMessageDatetime } from "@/lib/date-utils";
 import { MatchedField } from "@/types/transaction-review";
 
 type SmsMessage = typeof smsMessages.$inferSelect;
@@ -20,6 +20,7 @@ type BankWithPatterns = typeof banks.$inferSelect & {
 type ParsedGroups = Record<string, string>;
 type Transaction = typeof transactions.$inferSelect;
 type TransactionValues = Omit<typeof transactions.$inferInsert, "smsMessageId">;
+type ParsedTransactionValues = Partial<TransactionValues>;
 
 /** How close two messages' occurredAt must be to count as the same
  * transaction. Both messages for one transaction arrive within seconds, so
@@ -218,31 +219,134 @@ function stripCommas(value: string) {
   return value?.replace(/,/g, "");
 }
 
+function getNumericGroupValue(
+  groups: ParsedGroups,
+  key: string,
+): string | undefined {
+  const value = groups[key];
+  if (value == null) return undefined;
+
+  const cleaned = stripCommas(value).trim();
+  return cleaned.length > 0 ? cleaned : undefined;
+}
+
+function normalizeNumericField(
+  value: string | number | null | undefined,
+): number | null {
+  if (value == null) return null;
+
+  const cleaned = String(value).replace(/,/g, "").trim();
+  if (!cleaned) return null;
+
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatNumericField(value: number): string {
+  return value.toFixed(2);
+}
+
+function normalizeTransactionValues(
+  values: ParsedTransactionValues,
+): TransactionValues {
+  const amount = normalizeNumericField(values.amount);
+  const totalAmount = normalizeNumericField(values.totalAmount);
+  const serviceCharge = normalizeNumericField(values.serviceCharge);
+  const vat = normalizeNumericField(values.vat);
+  const disasterRecovery = normalizeNumericField(values.disasterRecovery);
+
+  let feeTotal = 0;
+  for (const fee of [serviceCharge, vat, disasterRecovery]) {
+    feeTotal += fee ?? 0;
+  }
+
+  let normalizedAmount = amount;
+  let normalizedTotal = totalAmount;
+
+  if (normalizedAmount == null && normalizedTotal != null) {
+    normalizedAmount = normalizedTotal - feeTotal;
+  }
+
+  if (normalizedAmount != null && normalizedTotal == null) {
+    normalizedTotal = normalizedAmount + feeTotal;
+  }
+
+  if (normalizedAmount == null || normalizedTotal == null) {
+    throw new Error(
+      "Unable to infer both amount and totalAmount from parsed message",
+    );
+  }
+
+  const amountsAreEqual = Math.abs(normalizedAmount - normalizedTotal) <= 0.01;
+
+  // Some CBE transfer messages explicitly include fee breakdowns but still
+  // report base amount and total amount as the same value. In that specific
+  // shape we should keep the explicit amount/total pair and avoid treating the
+  // fee breakdown as a hard inconsistency.
+  if (!amountsAreEqual) {
+    const expectedTotal = normalizedAmount + feeTotal;
+    const totalDelta = Math.abs(expectedTotal - normalizedTotal);
+
+    if (totalDelta > 0.01) {
+      throw new Error(
+        `Inconsistent transaction math: amount=${normalizedAmount.toFixed(2)}, fees=${feeTotal.toFixed(2)}, totalAmount=${normalizedTotal.toFixed(2)}`,
+      );
+    }
+  }
+
+  return {
+    bankId: values.bankId!,
+    patternId: values.patternId!,
+    tnxId: values.tnxId ?? null,
+    type: values.type ?? null,
+    senderName: values.senderName ?? null,
+    senderAccount: values.senderAccount ?? null,
+    recipientName: values.recipientName ?? null,
+    recipientAccount: values.recipientAccount ?? null,
+    recipientPhone: values.recipientPhone ?? null,
+    senderPhone: values.senderPhone ?? null,
+    amount: formatNumericField(normalizedAmount),
+    totalAmount: formatNumericField(normalizedTotal),
+    serviceCharge: formatNumericField(serviceCharge ?? 0),
+    vat: formatNumericField(vat ?? 0),
+    disasterRecovery: formatNumericField(disasterRecovery ?? 0),
+    balanceAfter: values.balanceAfter ?? null,
+    reference: values.reference ?? null,
+    occurredAt: values.occurredAt ?? null,
+  };
+}
+
 function toTransactionValues(
   msg: SmsMessage,
   bank: BankWithPatterns,
   pattern: BankPattern,
   groups: ParsedGroups,
-): TransactionValues {
+): ParsedTransactionValues {
   return {
     bankId: bank.id,
     patternId: pattern.id,
-    tnxId: groups.tnxID,
-    type: pattern.type,
-    senderName: groups.senderName,
-    senderAccount: groups.senderAccount,
-    recipientName: groups.recipientName,
-    recipientAccount: groups.recipientAccount,
-    recipientPhone: groups.recipientPhone,
-    senderPhone: groups.senderPhone,
-    amount: stripCommas(groups.amount),
-    totalAmount: stripCommas(groups.totalAmount) ?? 0,
-    serviceCharge: stripCommas(groups.serviceCharge) ?? 0,
-    vat: stripCommas(groups.vat) ?? 0,
-    disasterRecovery: stripCommas(groups.disasterRecovery) ?? 0,
+    tnxId: groups.tnxID ?? null,
+    type: pattern.type ?? null,
+    senderName: groups.senderName ?? null,
+    senderAccount: groups.senderAccount ?? null,
+    recipientName: groups.recipientName ?? null,
+    recipientAccount: groups.recipientAccount ?? null,
+    recipientPhone: groups.recipientPhone ?? null,
+    senderPhone: groups.senderPhone ?? null,
+    amount: getNumericGroupValue(groups, "amount"),
+    totalAmount: getNumericGroupValue(groups, "totalAmount"),
+    serviceCharge: getNumericGroupValue(groups, "serviceCharge"),
+    vat: getNumericGroupValue(groups, "vat"),
+    disasterRecovery: getNumericGroupValue(groups, "disasterRecovery"),
     balanceAfter: groups.balanceAfter ? stripCommas(groups.balanceAfter) : null,
     reference: groups.reference ?? null,
-    occurredAt: groups.dateTime ? toEpoch(groups.date, groups.time) : msg.date,
+    occurredAt: extractMessageDatetime(
+      msg.date,
+      groups.date,
+      groups.time,
+      pattern.dateFormat,
+      pattern.timeFormat,
+    ),
   };
 }
 
@@ -439,7 +543,24 @@ async function parseMessage(
   }
 
   const { pattern, groups } = result;
-  const values = toTransactionValues(msg, bank, pattern, groups);
+
+  let values: TransactionValues;
+  try {
+    values = normalizeTransactionValues(
+      toTransactionValues(msg, bank, pattern, groups),
+    );
+  } catch (error) {
+    console.warn("Skipping transaction with inconsistent parsed math", {
+      smsMessageId: msg.id,
+      bankId: bank.id,
+      patternId: pattern.id,
+      body: msg.body,
+      error: error instanceof Error ? error.message : String(error),
+    });
+
+    await markUnmatched(msg, bank.id);
+    return "unmatched";
+  }
 
   return db.transaction(async (tx) => {
     const existing = await findDuplicateTransaction(tx, msg, bank.id, values);

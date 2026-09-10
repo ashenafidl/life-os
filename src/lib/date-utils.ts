@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, isValid, parse, toDate } from "date-fns";
 
 /** Short display form used everywhere by default, e.g. "Dec 20, 2025" */
 export function formatDate(date: Date | string): string {
@@ -18,49 +18,56 @@ export function formatFullDateTime(date: Date | string): string {
   return format(d, "EEEE, MMMM d, yyyy 'at' HH:mm:ss");
 }
 
-function parseDate(date: string): { day: number; month: number; year: number } {
-  const match = date.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (!match) throw new Error(`Unrecognized date format: "${date}"`);
-  const [, day, month, year] = match;
-  return { day: Number(day), month: Number(month), year: Number(year) };
-}
-
-function parseTime(time: string): {
-  hour: number;
-  minute: number;
-  second: number;
-} {
-  const trimmed = time.trim();
-
-  // 12-hour with AM/PM, e.g. "09:18:51 PM" (also tolerates no space before AM/PM, lowercase)
-  const meridiemMatch = trimmed.match(/^(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)$/i);
-  if (meridiemMatch) {
-    const [, h, m, s, meridiem] = meridiemMatch;
-    let hour = Number(h);
-    const isPM = meridiem.toUpperCase() === "PM";
-    if (hour === 12) hour = 0; // 12 AM -> 0 hundred hours
-    if (isPM) hour += 12; // 12 PM -> back to 12; 9 PM -> 21
-    return { hour, minute: Number(m), second: Number(s) };
+export function extractMessageDatetime(
+  fallback: Date,
+  date?: string,
+  time?: string,
+  dateFormat?: string | null,
+  timeFormat?: string | null,
+): Date {
+  // If nothing provided, return fallback
+  if (!date && !time) {
+    return fallback;
   }
 
-  // Plain 24-hour, e.g. "14:03:40"
-  const plainMatch = trimmed.match(/^(\d{1,2}):(\d{2}):(\d{2})$/);
-  if (plainMatch) {
-    const [, h, m, s] = plainMatch;
-    return { hour: Number(h), minute: Number(m), second: Number(s) };
+  let baseDate: Date;
+
+  if (date) {
+    if (dateFormat) {
+      baseDate = parse(date, dateFormat, fallback);
+    } else {
+      baseDate = toDate(date);
+    }
+
+    if (!isValid(baseDate)) {
+      return fallback;
+    }
+  } else {
+    baseDate = new Date(fallback);
   }
 
-  throw new Error(`Unrecognized time format: "${time}"`);
-}
+  if (time) {
+    let timeDate: Date;
 
-/**
- * Converts a bank SMS's date and time (captured as separate regex groups)
- * into epoch milliseconds. Handles both 24-hour ("14:03:40") and 12-hour
- * with AM/PM ("09:18:51 PM") time formats — pass just the time portion;
- * strip any literal "at" in your regex's non-capturing text, not here.
- */
-export function toEpoch(date: string, time: string) {
-  const { day, month, year } = parseDate(date);
-  const { hour, minute, second } = parseTime(time);
-  return new Date(year, month - 1, day, hour, minute, second);
+    if (timeFormat) {
+      timeDate = parse(time, timeFormat, baseDate);
+    } else {
+      const dummyDateStr = `1970-01-01T${time}`;
+      timeDate = new Date(dummyDateStr);
+    }
+
+    if (!isValid(timeDate)) {
+      return fallback;
+    }
+
+    // Merge time into baseDate
+    baseDate.setHours(
+      timeDate.getHours(),
+      timeDate.getMinutes(),
+      timeDate.getSeconds(),
+      timeDate.getMilliseconds(),
+    );
+  }
+
+  return isValid(baseDate) ? baseDate : fallback;
 }

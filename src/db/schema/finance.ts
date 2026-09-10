@@ -71,6 +71,8 @@ export const bankPatterns = pgTable(
       .references(() => banks.id, { onDelete: "cascade" }),
     label: text("label").notNull(), // human label, e.g. "Debit alert", "Transfer confirmation"
     type: transactionTypeEnum("type"),
+    dateFormat: text("date_format"),
+    timeFormat: text("time_format"),
     regex: text("regex").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },

@@ -8,6 +8,8 @@ type SeedBank = {
     label: string;
     regex: string;
     type: (typeof transactionTypeEnum.enumValues)[number];
+    dateFormat?: string;
+    timeFormat?: string;
   }[];
 };
 
@@ -28,7 +30,7 @@ export const bankData: SeedBank[] = [
         label: "ATM withdrawal",
         type: "expense",
         regex:
-          "Dear\\s+Mr\\s+(?<senderName>.+?)\\s+your\\s+account\\s+(?<senderAccount>\\d+\\*{1,}\\d+)\\s+has\\s+been\\s+debited\\s+with\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d+)\\s+including\\s+service\\s+charge\\s+ETB(?<serviceCharge>[\\d,]+\\.\\d+)\\S+ETB(?<disasterRecovery>[\\d,]+\\.\\d+)\\s+and\\s+VAT\\([\\d,]+\\%\\)\\s+ETB(?<vat>[\\d,]+\\.\\d+).+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+)",
+          "Dear\\s+Mr\\s+(?<senderName>.+?)\\s+your\\s+account\\s+(?<senderAccount>\\d+\\*{1,}\\d+)\\s+has\\s+been\\s+debited\\s+with\\s+ETB\\s+(?<totalAmount>[\\d,]+\\.\\d+)\\s+including\\s+service\\s+charge\\s+ETB(?<serviceCharge>[\\d,]+\\.\\d+)\\S+ETB(?<disasterRecovery>[\\d,]+\\.\\d+)\\s+and\\s+VAT\\([\\d,]+\\%\\)\\s+ETB(?<vat>[\\d,]+\\.\\d+).+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+)",
       },
       {
         label: "Transfer to CBE",
@@ -59,6 +61,8 @@ export const bankData: SeedBank[] = [
         type: "income",
         regex:
           "Dear\\s+(?<recipientName>.+?),\\s+you\\s+have\\s+received\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d+)\\s+to\\s+your\\s+account\\s+(?<recipientAccount>\\d+\\*{1,}\\d+)\\s+from\\s+(?<senderName>.+?)\\s+account\\s+(?<senderAccount>\\d+\\*{1,}\\d+)\\s+on\\s+(?<date>[A-Z][a-z]{2}\\s+\\d{1,2},\\s+\\d{4})\\s+(?<time>\\d{2}:\\d{2}:\\d{2}\\s(?:AM|PM)).\\s+CBE\\s+txn\\s+ID:\\s+(?<tnxID>[a-zA-Z0-9]+).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+).*receipt\\s+here:\\s+(?<reference>https:\\/\\/\\S+)",
+        dateFormat: "MMM dd, yyyy",
+        timeFormat: "hh:mm:ss a",
       },
     ],
   },
@@ -73,36 +77,48 @@ export const bankData: SeedBank[] = [
         type: "expense",
         regex:
           "Dear\\s+(?<senderName>.+?)\\s+you\\s+have\\s+transferred\\s+ETB\\s+(?<amount>[\\d,]+.\\d+)\\s+to\\s+(?<recipientName>.+?)\\s+\\((?<recipientPhone>[\\d,]+\\*{1,}\\d+)\\)\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+(?<time>\\d{2}:\\d{2}:\\d{2}).\\s+Your\\s+transaction\\s+number\\s+is\\s+(?<tnxID>[a-zA-Z0-9]+).\\s+The\\s+service\\s+fee\\s+is\\s+ETB\\s+(?<serviceCharge>[\\d,]+.\\d+).+service\\s+fee\\s+is\\s+ETB\\s+(?<vat>[\\d,]+.\\d+)\\..+account\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+.\\d+)\\..+this\\s+link:\\s+(?<reference>https:\\/\\/\\S+)\\.",
+        dateFormat: "dd/MM/yyyy",
+        timeFormat: "HH:mm:ss",
       },
       {
         label: "Airtime top-up",
         type: "expense",
         regex:
           "Dear\\s+(?<senderName>.+?)\\s+you have\\s+recharged\\s+ETB\\s+(?<amount>[\\d,]+.\\d+)\\s+airtime\\s+for\\s+\\d+\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+(?<time>\\d{2}:\\d{2}:\\d{2}).\\s+your\\s+transaction\\s+number\\s+is\\s+(?<tnxID>[a-zA-Z0-9]+).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+).\\s+to\\s+download\\s+your\\s+payment\\s+information\\s+please\\s+click\\s+this\\s+link:\\s+(?<reference>https:\\/\\/\\S+)",
+        dateFormat: "dd/MM/yyyy",
+        timeFormat: "HH:mm:ss",
       },
       {
         label: "Incoming transfer from Telebirr account",
         type: "income",
         regex:
           "Dear\\s+(?<recipientName>.+?)\\s+you have\\s+received\\s+ETB\\s+(?<amount>[\\d,]+.\\d+)\\s+from\\s+(?<senderName>.+?)\\((?<senderPhone>[\\d,]+\\*{1,}\\d+)\\)\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+(?<time>\\d{2}:\\d{2}:\\d{2}).\\s+Your\\s+transaction\\s+number\\s+is\\s+(?<tnxID>[a-zA-Z0-9]+)..+account\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+.\\d+)",
+        dateFormat: "dd/MM/yyyy",
+        timeFormat: "HH:mm:ss",
       },
       {
         label: "Package purchase",
         type: "expense",
         regex:
           "Dear\\s+(?<senderName>.+?)\\s+you\\s+have\\s+paid\\s+ETB\\s+(?<amount>[\\d,]+.\\d+).+made\\s+for\\s+(?<recipientPhone>\\d+)\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+(?<time>\\d{2}:\\d{2}:\\d{2}).\\s+Your\\s+transaction\\s+number\\s+is\\s+(?<tnxID>[a-zA-Z0-9]+).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+).\\s?to\\s+download\\s+your\\s+payment\\s+information\\s+please\\s+click\\s+this\\s+link:\\s+(?<reference>https:\\/\\/\\S+)",
+        dateFormat: "dd/MM/yyyy",
+        timeFormat: "HH:mm:ss",
       },
       {
         label: "Bill payment",
         type: "expense",
         regex:
           "Dear\\s+(?<senderName>.+?)\\s+you\\s+have\\s+paid\\s+ETB\\s+(?<amount>[\\d,]+.\\d+).+?on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+(?<time>\\d{2}:\\d{2}:\\d{2}).\\s+Your\\s+transaction\\s+number\\s+is\\s+(?<tnxID>[a-zA-Z0-9]+).\\s+your\\s+telebirr\\s+account\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+).\\s?to\\s+download\\s+your\\s+payment\\s+information\\s+please\\s+click\\s+this\\s+link:\\s+(?<reference>https:\\/\\/\\S+)",
+        dateFormat: "dd/MM/yyyy",
+        timeFormat: "HH:mm:ss",
       },
       {
         label: "Incoming transfer from CBE",
         type: "income",
         regex:
           "you\\s+have\\s+received\\s+ETB\\s+(?<amount>[\\d,]+.\\d+)\\s+by\\s+transaction\\s+number\\s+(?<tnxID>[a-zA-Z0-9]+)\\s+on\\s+(?<date>\\d{4}-\\d{2}-\\d{2})\\s+(?<time>\\d{2}:\\d{2}:\\d{2}).+to\\syour\\stelebirr\\s+account\\s+(?<recipientAccount>\\d+)\\s+-\\s+(?<recipientName>.+).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+.\\d+)",
+        dateFormat: "yyyy-MM-dd",
+        timeFormat: "HH:mm:ss",
       },
     ],
   },
@@ -117,6 +133,8 @@ export const bankData: SeedBank[] = [
         type: "expense",
         regex:
           "your\\s+account\\s+\\'(?<senderAccount>\\d+\\*{1,}\\d+)\\'\\s+is\\s+debited\\s+with\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d+)\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+at\\s+(?<time>\\d{2}:\\d{2}:\\d{2}\\s(?:AM|PM)).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+)",
+        dateFormat: "dd/MM/yyyy",
+        timeFormat: "hh:mm:ss a",
       },
       {
         label: "Incoming transfer from Dashen (via 'DB SuperApp' shortcode)",
@@ -129,6 +147,8 @@ export const bankData: SeedBank[] = [
         type: "income",
         regex:
           "your\\s+account\\s+'(?<recipientAccount>\\d+\\*{1,}\\d+)'\\s+is\\s+credited\\s+with\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d+)\\s+from\\s+(?<senderName>.+?)\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+at\\s+(?<time>\\d{2}:\\d{2}:\\d{2}\\s(?:AM|PM)).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+)",
+        dateFormat: "dd/MM/yyyy",
+        timeFormat: "hh:mm:ss a",
       },
       {
         label: "Outgoing transfer to Dashen Bank",
