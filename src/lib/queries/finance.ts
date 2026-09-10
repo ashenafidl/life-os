@@ -1,15 +1,19 @@
 import {
-  isNotNull,
-  desc,
-  sql,
   and,
-  gte,
-  lt,
-  eq,
   count,
-  SQL,
+  desc,
+  eq,
+  exists,
+  gte,
   gt,
   ilike,
+  inArray,
+  isNotNull,
+  lt,
+  notExists,
+  or,
+  SQL,
+  sql,
 } from "drizzle-orm";
 import { cache } from "react";
 
@@ -17,10 +21,17 @@ import { db } from "@/db/drizzle";
 import {
   bankPatterns,
   banks,
+  categories,
   smsMessages,
+  transactionCategories,
   transactions,
 } from "@/db/schema/finance";
-import { FilterCondition } from "@/lib/filters";
+import {
+  FieldType,
+  FilterCondition,
+  parseFilterValues,
+  UNCATEGORIZED_CATEGORY_VALUE,
+} from "@/lib/filters";
 import withPagination, { PaginatedResult } from "@/lib/with-pagination";
 import { MatchedField, TransactionReview } from "@/types/transaction-review";
 
@@ -92,13 +103,14 @@ export const getMessages = cache(async () => {
 
 // Mirrors the field types in lib/filters.ts — kept separate since the query
 // layer only needs field->column mapping, not the UI's runtime bank options.
-const FIELD_TYPES: Record<string, "text" | "number" | "select" | "date"> = {
+const FIELD_TYPES: Record<string, FieldType> = {
   bankId: "select",
   type: "select",
   amount: "number",
   occurredAt: "date",
   recipientName: "text",
   senderName: "text",
+  categoryId: "multi-select",
 };
 
 const FILTER_COLUMNS = {
@@ -108,9 +120,54 @@ const FILTER_COLUMNS = {
   occurredAt: transactions.occurredAt,
   recipientName: transactions.recipientName,
   senderName: transactions.senderName,
+  categoryId: transactions.id,
 };
 
 const conditionToSql = (condition: FilterCondition): SQL | undefined => {
+  if (condition.field === "categoryId") {
+    const selectedValues = parseFilterValues(condition.value);
+    const selectedCategories = selectedValues.filter(
+      (value) => value !== UNCATEGORIZED_CATEGORY_VALUE,
+    );
+    const includeUncategorized = selectedValues.includes(
+      UNCATEGORIZED_CATEGORY_VALUE,
+    );
+
+    if (selectedCategories.length === 0 && !includeUncategorized) {
+      return undefined;
+    }
+
+    const categoryMatchClause =
+      selectedCategories.length > 0
+        ? exists(
+            db
+              .select()
+              .from(transactionCategories)
+              .where(
+                and(
+                  eq(transactionCategories.transactionId, transactions.id),
+                  inArray(transactionCategories.categoryId, selectedCategories),
+                ),
+              ),
+          )
+        : undefined;
+
+    const uncategorizedClause = includeUncategorized
+      ? notExists(
+          db
+            .select()
+            .from(transactionCategories)
+            .where(eq(transactionCategories.transactionId, transactions.id)),
+        )
+      : undefined;
+
+    if (categoryMatchClause && uncategorizedClause) {
+      return or(categoryMatchClause, uncategorizedClause);
+    }
+
+    return categoryMatchClause ?? uncategorizedClause;
+  }
+
   const column = FILTER_COLUMNS[condition.field as keyof typeof FILTER_COLUMNS];
   if (!column || !condition.value) return undefined; // unknown field or empty value — don't filter on nothing
 
@@ -189,6 +246,29 @@ export const getTransactionReview = cache(
     const hasNextPage = opts.page < totalPages;
     const hasPreviousPage = opts.page > 1;
 
+    const transactionIds = rows.map((row) => row.transaction.id);
+
+    const linkedCategories =
+      transactionIds.length > 0
+        ? await db
+            .select({
+              transactionId: transactionCategories.transactionId,
+              category: categories,
+            })
+            .from(transactionCategories)
+            .innerJoin(
+              categories,
+              eq(transactionCategories.categoryId, categories.id),
+            )
+            .where(inArray(transactionCategories.transactionId, transactionIds))
+        : [];
+
+    const categoryMap = new Map<string, (typeof categories.$inferSelect)[]>();
+    for (const row of linkedCategories) {
+      const existing = categoryMap.get(row.transactionId) ?? [];
+      categoryMap.set(row.transactionId, [...existing, row.category]);
+    }
+
     const data = rows.map((row) => {
       const fields: MatchedField[] = [];
 
@@ -221,6 +301,7 @@ export const getTransactionReview = cache(
         body: row.body,
         fields,
         pattern: row.pattern,
+        categories: categoryMap.get(row.transaction.id) ?? [],
       };
     });
 
@@ -237,3 +318,7 @@ export const getTransactionReview = cache(
     };
   },
 );
+
+export const getCategories = cache(async () => {
+  return await db.select().from(categories);
+});

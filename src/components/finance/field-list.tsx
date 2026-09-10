@@ -74,6 +74,18 @@ const MAPPINGS: FieldMapping[] = [
   },
 ];
 
+const FIELD_HOVER_ALIASES: Record<string, string[]> = {
+  date: ["date", "time"],
+};
+
+function isFieldListItemActive(sourceField: string, active?: string) {
+  if (!active) {
+    return false;
+  }
+
+  return (FIELD_HOVER_ALIASES[sourceField] ?? [sourceField]).includes(active);
+}
+
 interface Props {
   transaction: Transaction;
   active: string | undefined;
@@ -88,6 +100,7 @@ export default function FieldList({ transaction, active, setActive }: Props) {
         const value = render
           ? render(transaction)
           : (transaction[column] ?? "—");
+        const isActive = isFieldListItemActive(sourceField, active);
 
         return (
           <div
@@ -95,7 +108,7 @@ export default function FieldList({ transaction, active, setActive }: Props) {
             className={cn(
               "flex items-center justify-between border-l-3 px-2",
               color.border,
-              active !== sourceField && active !== undefined && "opacity-30",
+              !isActive && active !== undefined && "opacity-30",
             )}
             onMouseEnter={() => setActive(sourceField)}
             onMouseLeave={() => setActive()}

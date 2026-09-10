@@ -3,6 +3,19 @@ import { cn } from "cn";
 import { getFieldColor } from "@/components/finance/field-colors";
 import { MatchedField } from "@/types/transaction-review";
 
+const FIELD_HOVER_GROUPS: Record<string, string[]> = {
+  date: ["date", "time"],
+  time: ["date", "time"],
+};
+
+function isRelatedFieldActive(fieldName: string, active?: string) {
+  if (!active) {
+    return false;
+  }
+
+  return (FIELD_HOVER_GROUPS[fieldName] ?? [fieldName]).includes(active);
+}
+
 interface Props {
   body: string;
   fields: MatchedField[];
@@ -58,6 +71,8 @@ export default function HighlightedBody({
           );
         }
         const color = getFieldColor(seg.field.name);
+        const isActive = isRelatedFieldActive(seg.field.name, active);
+
         return (
           <span
             key={seg.field.name}
@@ -65,7 +80,7 @@ export default function HighlightedBody({
               "rounded px-0.5 font-medium",
               color.bg,
               color.text,
-              active !== seg.field.name && active !== undefined && "opacity-30",
+              !isActive && active !== undefined && "opacity-30",
             )}
             onMouseEnter={() => setActive(seg.field?.name)}
             onMouseLeave={() => setActive()}

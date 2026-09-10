@@ -16,6 +16,8 @@ import {
   FilterCondition,
   FilterFieldConfig,
   OPERATORS_BY_TYPE,
+  parseFilterValues,
+  serializeFilterValues,
 } from "@/lib/filters";
 
 interface Props {
@@ -123,13 +125,37 @@ export default function FilterEditor({
                 </SelectContent>
               </Select>
 
-              {fieldConfig.type === "select" ? (
+              {fieldConfig.type === "select" ||
+              fieldConfig.type === "multi-select" ? (
                 <Select
                   items={fieldConfig.options}
-                  value={condition.value}
-                  onValueChange={(value) =>
-                    updateCondition(condition.id, { value: value ?? undefined })
+                  value={
+                    fieldConfig.type === "multi-select"
+                      ? parseFilterValues(condition.value)
+                      : condition.value
                   }
+                  multiple={fieldConfig.type === "multi-select"}
+                  onValueChange={(value) => {
+                    const nextValue =
+                      fieldConfig.type === "multi-select"
+                        ? serializeFilterValues(
+                            Array.isArray(value)
+                              ? value.filter(
+                                  (item): item is string =>
+                                    typeof item === "string" && item.length > 0,
+                                )
+                              : value
+                                ? [value]
+                                : [],
+                          )
+                        : value == null
+                          ? ""
+                          : String(value);
+
+                    updateCondition(condition.id, {
+                      value: nextValue,
+                    });
+                  }}
                 >
                   <SelectTrigger className="h-8! min-w-40">
                     <SelectValue placeholder="Select…" />

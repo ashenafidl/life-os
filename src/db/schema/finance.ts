@@ -1,8 +1,10 @@
 import {
+  boolean,
   integer,
   numeric,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -19,6 +21,11 @@ export const smsStatusEnum = pgEnum("sms_status", [
 export const transactionTypeEnum = pgEnum("transaction_type", [
   "income",
   "expense",
+]);
+
+export const transactionLinkTypeEnum = pgEnum("transaction_link_type", [
+  "refund",
+  "cashback",
 ]);
 
 export const smsMessages = pgTable("sms_messages", {
@@ -109,3 +116,54 @@ export const transactions = pgTable("transactions", {
   occurredAt: timestamp("occurred_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+export const categories = pgTable("categories", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull().unique(),
+  color: text("color").notNull(), // hex string, e.g. "#22C55E"
+  isDefault: boolean("is_default").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const transactionCategories = pgTable(
+  "transaction_categories",
+  {
+    transactionId: uuid("transaction_id")
+      .notNull()
+      .references(() => transactions.id, { onDelete: "cascade" }),
+    categoryId: uuid("category_id")
+      .notNull()
+      .references(() => categories.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.transactionId, table.categoryId] })],
+);
+
+// One-to-one link between a transaction and the original it relates to.
+// transactionId = the linking side (e.g. the refund itself).
+// linkedTransactionId = the transaction it links to (e.g. the original purchase).
+// Both columns are unique, so a given transaction can be on the "linking"
+// side of at most one link, and the "linked-to" side of at most one link —
+// enforces true 1:1 in both directions, per the current scope.
+export const transactionLinks = pgTable(
+  "transaction_links",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    transactionId: uuid("transaction_id")
+      .notNull()
+      .unique()
+      .references(() => transactions.id, { onDelete: "cascade" }),
+    linkedTransactionId: uuid("linked_transaction_id")
+      .notNull()
+      .unique()
+      .references(() => transactions.id, { onDelete: "cascade" }),
+    type: transactionLinkTypeEnum("type").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("no_self_link").on(
+      table.transactionId,
+      table.linkedTransactionId,
+    ),
+  ],
+);

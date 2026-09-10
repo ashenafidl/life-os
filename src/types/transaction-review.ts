@@ -1,4 +1,9 @@
-import { bankPatterns, smsMessages, transactions } from "@/db/schema/finance";
+import {
+  bankPatterns,
+  categories,
+  smsMessages,
+  transactions,
+} from "@/db/schema/finance";
 
 export interface MatchedField {
   name: string;
@@ -13,6 +18,7 @@ export interface TransactionReview {
   body: string;
   fields: MatchedField[];
   pattern: typeof bankPatterns.$inferSelect;
+  categories: Array<typeof categories.$inferSelect>;
 }
 
 export type SmsMessageStatus = (typeof smsMessages.$inferSelect)["status"];

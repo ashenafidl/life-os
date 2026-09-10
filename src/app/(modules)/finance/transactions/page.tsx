@@ -18,7 +18,11 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { buildFilterFields, decodeFilters } from "@/lib/filters";
-import { getBanks, getTransactionReview } from "@/lib/queries/finance";
+import {
+  getBanks,
+  getCategories,
+  getTransactionReview,
+} from "@/lib/queries/finance";
 
 export default async function TransactionsPage({
   searchParams,
@@ -30,13 +34,18 @@ export default async function TransactionsPage({
   const page = Math.max(1, Number(pageParam) || 1);
   const filters = decodeFilters(filtersParam);
 
-  const [banks, result] = await Promise.all([
+  const [banks, categories, result] = await Promise.all([
     getBanks(),
+    getCategories(),
     getTransactionReview({ page, pageSize: 50, filters }),
   ]);
 
   const fields = buildFilterFields(
     banks.map((bank) => ({ value: bank.id, label: bank.name })),
+    categories.map((category) => ({
+      value: category.id,
+      label: category.name,
+    })),
   );
 
   const start = (result.meta.page - 1) * result.meta.pageSize + 1;
@@ -80,7 +89,11 @@ export default async function TransactionsPage({
           {result.data.length > 0 ? (
             <>
               {result.data.map((review) => (
-                <SmsMatchViewer key={review.transaction.id} review={review} />
+                <SmsMatchViewer
+                  key={review.transaction.id}
+                  review={review}
+                  categories={categories}
+                />
               ))}
             </>
           ) : (

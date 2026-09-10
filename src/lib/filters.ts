@@ -1,4 +1,4 @@
-export type FieldType = "text" | "number" | "select" | "date";
+export type FieldType = "text" | "number" | "select" | "multi-select" | "date";
 
 export interface FieldOption {
   label: string;
@@ -19,6 +19,19 @@ export interface FilterCondition {
   value: string;
 }
 
+export const UNCATEGORIZED_CATEGORY_VALUE = "__uncategorized__";
+
+export function parseFilterValues(value: string | null | undefined): string[] {
+  return (value ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+export function serializeFilterValues(values: string[]): string {
+  return values.filter(Boolean).join(",");
+}
+
 export const OPERATORS_BY_TYPE: Record<FieldType, FieldOption[]> = {
   text: [
     { value: "equals", label: "equals" },
@@ -30,6 +43,7 @@ export const OPERATORS_BY_TYPE: Record<FieldType, FieldOption[]> = {
     { value: "lt", label: "less than" },
   ],
   select: [{ value: "equals", label: "equals" }],
+  "multi-select": [{ value: "equals", label: "is one of" }],
   date: [
     { value: "equals", label: "is" },
     { value: "before", label: "before" },
@@ -57,9 +71,22 @@ const BASE_FILTER_FIELDS: FilterFieldConfig[] = [
 
 export function buildFilterFields(
   bankOptions: FieldOption[],
+  categoryOptions: FieldOption[],
 ): FilterFieldConfig[] {
   return [
     { key: "bankId", label: "Bank", type: "select", options: bankOptions },
+    {
+      key: "categoryId",
+      label: "Category",
+      type: "multi-select",
+      options: [
+        ...categoryOptions,
+        {
+          value: UNCATEGORIZED_CATEGORY_VALUE,
+          label: "Uncategorized",
+        },
+      ],
+    },
     ...BASE_FILTER_FIELDS,
   ];
 }
