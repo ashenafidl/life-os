@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # LifeOS
 
-Personal "life OS" web app: Next.js 16 (App Router), React 19, TypeScript, Tailwind v4, PostgreSQL via Drizzle. Modules: finance, shiplog, countdown, workouts.
+Personal "life OS" web app: Next.js 16 (App Router), React 19, TypeScript, Tailwind v4, PostgreSQL via Drizzle. Modules: finance, countdown.
 
 ## Toolchain (do not use npm/yarn or eslint/prettier)
 
