@@ -1,4 +1,11 @@
-import { format, isValid, parse, toDate } from "date-fns";
+import { format, isValid, parse } from "date-fns";
+import { fromZonedTime } from "date-fns-tz";
+
+const SMS_TIMEZONE = "Africa/Addis_Ababa";
+
+// arbitrary — only used so date-fns'
+// `parse()` has something to anchor against; only y/m/d or h/m/s get read back out
+const REFERENCE_DATE = new Date(2000, 0, 1);
 
 /** Short display form used everywhere by default, e.g. "Dec 20, 2025" */
 export function formatDate(date: Date | string): string {
@@ -26,48 +33,44 @@ export function extractMessageDatetime(
   timeFormat?: string | null,
 ): Date {
   // If nothing provided, return fallback
-  if (!date && !time) {
-    return fallback;
-  }
+  if (!date && !time) return fallback;
 
-  let baseDate: Date;
+  let year: number, month: number, day: number;
 
   if (date) {
-    if (dateFormat) {
-      baseDate = parse(date, dateFormat, fallback);
-    } else {
-      baseDate = toDate(date);
-    }
+    const parsedDate = dateFormat
+      ? parse(date, dateFormat, REFERENCE_DATE)
+      : new Date(`${date}T00:00:00`);
 
-    if (!isValid(baseDate)) {
-      return fallback;
-    }
+    if (!isValid(parsedDate)) return fallback;
+
+    year = parsedDate.getFullYear();
+    month = parsedDate.getMonth();
+    day = parsedDate.getDate();
   } else {
-    baseDate = new Date(fallback);
+    year = fallback.getFullYear();
+    month = fallback.getMonth();
+    day = fallback.getDate();
   }
+
+  let hours = 0;
+  let minutes = 0;
+  let seconds = 0;
 
   if (time) {
-    let timeDate: Date;
-
-    if (timeFormat) {
-      timeDate = parse(time, timeFormat, baseDate);
-    } else {
-      const dummyDateStr = `1970-01-01T${time}`;
-      timeDate = new Date(dummyDateStr);
-    }
-
-    if (!isValid(timeDate)) {
-      return fallback;
-    }
-
-    // Merge time into baseDate
-    baseDate.setHours(
-      timeDate.getHours(),
-      timeDate.getMinutes(),
-      timeDate.getSeconds(),
-      timeDate.getMilliseconds(),
-    );
+    const parsedTime = timeFormat
+      ? parse(time, timeFormat, REFERENCE_DATE)
+      : new Date(`1970-01-01T${time}`);
+    if (!isValid(parsedTime)) return fallback;
+    hours = parsedTime.getHours();
+    minutes = parsedTime.getMinutes();
+    seconds = parsedTime.getSeconds();
   }
 
-  return isValid(baseDate) ? baseDate : fallback;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const literal = `${year}-${pad(month + 1)}-${pad(day)} ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+
+  const result = fromZonedTime(literal, SMS_TIMEZONE);
+
+  return isValid(result) ? result : fallback;
 }
