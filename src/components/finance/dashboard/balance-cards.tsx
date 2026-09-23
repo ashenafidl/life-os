@@ -12,10 +12,9 @@ import { getBankBalances } from "@/lib/queries/finance";
 
 export default async function BalanceCards() {
   const { balances, total } = await getBankBalances();
-  const visibleBalances = balances.filter((item) => item.balance);
 
   // Empty state — no banks with a balance to show
-  if (visibleBalances.length === 0) {
+  if (balances.length === 0) {
     return (
       <Card className="flex w-full flex-col items-center justify-center gap-2 border-dashed py-10 text-center">
         <CardContent className="flex flex-col items-center gap-2 pt-0">
@@ -51,26 +50,24 @@ export default async function BalanceCards() {
 
           <CardFooter>
             <div className="text-xs opacity-70">
-              Across {visibleBalances.length} bank
-              {visibleBalances.length !== 1 ? "s" : ""}
+              Across {balances.length} bank
+              {balances.length !== 1 ? "s" : ""}
             </div>
           </CardFooter>
         </Card>
       </div>
 
-      {visibleBalances.map((balance) => (
+      {balances.map((balance) => (
         <Card
           key={balance.bankId}
           className="w-full max-w-fit shrink-0 shadow-none sm:w-[320px] lg:min-w-90"
         >
           <CardHeader>{balance.bankName}</CardHeader>
-          <CardContent>
-            <div className="flex items-end gap-2">
-              <h1 className="font-heading text-5xl">
-                {formatMoney(balance.balance ?? 0, { compact: false })}
-              </h1>
-              <span className="text-muted-foreground text-lg">ETB</span>
-            </div>
+          <CardContent className="flex flex-row items-end gap-2">
+            <h1 className="font-heading text-5xl">
+              {formatMoney(balance.balance ?? 0, { compact: false })}
+            </h1>
+            <span className="text-muted-foreground text-lg">ETB</span>
           </CardContent>
           <CardFooter>
             <div className="text-muted-foreground text-xs">

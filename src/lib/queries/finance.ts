@@ -14,6 +14,8 @@ import {
   or,
   SQL,
   sql,
+  max,
+  asc,
 } from "drizzle-orm";
 import { cache } from "react";
 
@@ -33,6 +35,7 @@ import {
   UNCATEGORIZED_CATEGORY_VALUE,
 } from "@/lib/filters";
 import withPagination, { PaginatedResult } from "@/lib/with-pagination";
+import { CashBalance } from "@/types/cash-balance-types";
 import { MatchedField, TransactionReview } from "@/types/transaction-review";
 
 export const getBanks = cache(async () => {
@@ -54,9 +57,10 @@ export const getBankBalances = cache(async () => {
     .orderBy(transactions.bankId, desc(transactions.occurredAt));
 
   const allBanks = await db.select().from(banks);
+  const { balance: cashBalance, lastTransactionDate } = await getCashBalance();
 
-  const balances = allBanks
-    .map((bank) => {
+  const balances = [
+    ...allBanks.map((bank) => {
       const latest = latestPerBank.find((t) => t.bankId === bank.id);
       return {
         bankId: bank.id,
@@ -64,8 +68,14 @@ export const getBankBalances = cache(async () => {
         balance: latest ? Number(latest.balanceAfter) : null, // null = no known balance yet
         asOf: latest?.occurredAt ?? null,
       };
-    })
-    .sort((a, b) => (b.balance ?? 0) - (a.balance ?? 0));
+    }),
+    {
+      bankId: "0",
+      bankName: "Cash",
+      balance: cashBalance,
+      asOf: lastTransactionDate,
+    },
+  ].sort((a, b) => (b.balance ?? 0) - (a.balance ?? 0));
 
   const total = balances.reduce((sum, b) => sum + (b.balance ?? 0), 0);
 
@@ -85,10 +95,13 @@ export const getDailyTotals = cache(
       )`,
       })
       .from(transactions)
-      .innerJoin(smsMessages, eq(transactions.smsMessageId, smsMessages.id))
+      .leftJoin(smsMessages, eq(transactions.smsMessageId, smsMessages.id))
       .where(
         and(
-          eq(smsMessages.status, "parsed"),
+          or(
+            eq(transactions.accountType, "cash"),
+            eq(smsMessages.status, "parsed"),
+          ),
           gte(transactions.occurredAt, from),
           lt(transactions.occurredAt, to),
         ),
@@ -322,5 +335,25 @@ export const getTransactionReview = cache(
 );
 
 export const getCategories = cache(async () => {
-  return await db.select().from(categories);
+  return await db.select().from(categories).orderBy(asc(categories.name));
+});
+
+export const getCashBalance = cache(async (): Promise<CashBalance> => {
+  const [{ net, lastDate }] = await db
+    .select({
+      net: sql<string>`sum(
+        case when ${transactions.type} = 'income'
+          then ${transactions.amount}
+          else -${transactions.amount}
+        end
+      )`,
+      lastDate: max(transactions.occurredAt),
+    })
+    .from(transactions)
+    .where(eq(transactions.accountType, "cash"));
+
+  return {
+    balance: Number(net),
+    lastTransactionDate: lastDate ?? new Date(),
+  };
 });

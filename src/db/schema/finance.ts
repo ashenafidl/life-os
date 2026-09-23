@@ -28,6 +28,8 @@ export const transactionLinkTypeEnum = pgEnum("transaction_link_type", [
   "cashback",
 ]);
 
+export const accountTypeEnum = pgEnum("account_type", ["bank", "cash"]);
+
 export const smsMessages = pgTable("sms_messages", {
   id: uuid("id").primaryKey().defaultRandom(),
   smsId: integer("sms_id").notNull(),
@@ -82,15 +84,11 @@ export const bankPatterns = pgTable(
 export const transactions = pgTable("transactions", {
   id: uuid("id").primaryKey().defaultRandom(),
   smsMessageId: uuid("sms_message_id")
-    .notNull()
     .unique()
     .references(() => smsMessages.id, { onDelete: "cascade" }),
-  bankId: uuid("bank_id")
-    .notNull()
-    .references(() => banks.id),
-  patternId: uuid("pattern_id")
-    .notNull()
-    .references(() => bankPatterns.id),
+  bankId: uuid("bank_id").references(() => banks.id),
+  patternId: uuid("pattern_id").references(() => bankPatterns.id),
+  accountType: accountTypeEnum("account_type").notNull().default("bank"),
   type: transactionTypeEnum("type"),
   tnxId: text("tnx_id").unique(),
   senderName: text("sender_name"),

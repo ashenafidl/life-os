@@ -20,7 +20,7 @@ export default async function DayTooltip({ day }: Props) {
       bank: banks,
     })
     .from(transactions)
-    .innerJoin(banks, eq(transactions.bankId, banks.id))
+    .leftJoin(banks, eq(transactions.bankId, banks.id))
     .where(
       and(
         gte(transactions.occurredAt, dayStart),
@@ -96,16 +96,19 @@ export default async function DayTooltip({ day }: Props) {
         </div>
       </div>
 
-      <div className="divide-border/50 divide-y">
+      <div>
         {rows.map((row) => (
           <div
             key={row.transaction.id}
-            className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-0.5 py-1.5 text-xs"
+            className="border-border/50 grid grid-cols-[1fr_auto] gap-x-3 gap-y-0.5 border-t py-1.5 text-xs"
           >
             <div className="min-w-0">
-              <p className="truncate font-medium">{row.bank.name}</p>
+              <p className="truncate font-medium">
+                {row.bank ? row.bank.name : "Cash"}
+              </p>
               <p className="text-muted-foreground truncate">
-                {row?.transaction?.recipientName ?? "UNKNOWN"}
+                {row.transaction.recipientName ??
+                  (row.bank ? "UNKNOWN" : "Manual entry")}
               </p>
             </div>
             <div className="text-right">

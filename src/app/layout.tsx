@@ -6,11 +6,13 @@ import { cn } from "cn";
 import type { Metadata } from "next";
 import { Figtree, IBM_Plex_Mono, Lora } from "next/font/google";
 
+import AddTransactionDialog from "@/components/finance/transactions/add-transaction-dialog";
 import BreakpointIndicator from "@/components/shared/breakpoint-indicator";
 import HotkeysSheet from "@/components/shared/hotkeys-sheet";
 import ThemeProvider from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ModuleProvider } from "@/context/module-context";
+import { getCategories } from "@/lib/queries/finance";
 
 const loraHeading = Lora({ subsets: ["latin"], variable: "--font-heading" });
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
@@ -25,11 +27,13 @@ export const metadata: Metadata = {
   description: "Organization your life.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const categories = await getCategories();
+
   return (
     <html
       lang="en"
@@ -53,6 +57,7 @@ export default function RootLayout({
             <ModuleProvider>
               {children}
 
+              <AddTransactionDialog allCategories={categories} />
               <HotkeysSheet />
 
               <TanStackDevtools

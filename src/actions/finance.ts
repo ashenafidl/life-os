@@ -8,8 +8,15 @@ import {
   categories,
   smsMessages,
   transactionCategories,
+  transactions,
 } from "@/db/schema/finance";
+import { ActionError, ActionResult, runAction } from "@/lib/action-result";
 import { parseMessages } from "@/lib/sms-parser";
+import { cashTnxSchema, type CashTnxInput } from "@/schemas/cash-transaction";
+
+interface CashTransactionInput extends CashTnxInput {
+  categoryIds: string[];
+}
 
 export async function deleteAllUnmatched() {
   await db.delete(smsMessages).where(and(eq(smsMessages.status, "unmatched")));
@@ -83,4 +90,51 @@ export async function updateTransactionCategories(
   });
 
   revalidatePath("/finance/transactions");
+}
+
+export async function createCashTransaction(
+  data: CashTransactionInput,
+): Promise<ActionResult<{ id: string }>> {
+  return runAction(async () => {
+    const parsed = cashTnxSchema.safeParse({
+      amount: data.amount,
+      occurredAt: data.occurredAt,
+      type: data.type,
+    });
+
+    if (!parsed.success) {
+      throw new ActionError(
+        parsed.error.issues.map((issue) => issue.message).join("; "),
+      );
+    }
+
+    const { amount, occurredAt, type } = parsed.data;
+
+    const [row] = await db
+      .insert(transactions)
+      .values({
+        accountType: "cash",
+        type,
+        amount,
+        totalAmount: amount,
+        occurredAt,
+      })
+      .returning({ id: transactions.id });
+
+    const uniqueCategoryIds = [...new Set(data.categoryIds.filter(Boolean))];
+
+    if (uniqueCategoryIds.length > 0) {
+      await db.insert(transactionCategories).values(
+        uniqueCategoryIds.map((categoryId) => ({
+          transactionId: row.id,
+          categoryId,
+        })),
+      );
+    }
+
+    revalidatePath("/finance/dashboard");
+    revalidatePath("/finance/transactions");
+
+    return { id: row.id };
+  });
 }

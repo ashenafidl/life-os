@@ -24,6 +24,7 @@ export default function FormInput({ type = "text", ...props }: Props) {
         onBlur={field.handleBlur}
         onChange={(e) => field.handleChange(e.target.value)}
         aria-invalid={isInvalid}
+        {...props}
       />
     </FormBase>
   );
