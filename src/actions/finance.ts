@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db/drizzle";
@@ -137,4 +137,8 @@ export async function createCashTransaction(
 
     return { id: row.id };
   });
+}
+
+export async function listCategories() {
+  return db.select().from(categories).orderBy(asc(categories.name));
 }

@@ -1,6 +1,10 @@
 "use client";
 
-import { CaretUpDownIcon } from "@phosphor-icons/react";
+import {
+  CaretUpDownIcon,
+  KeyboardIcon,
+  QuestionIcon,
+} from "@phosphor-icons/react";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -11,11 +15,13 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarHeader,
   SidebarMenu,
@@ -133,6 +139,34 @@ export default function AppSidebar() {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <SidebarMenuButton>
+                    <QuestionIcon />
+                    Help & Resources
+                  </SidebarMenuButton>
+                }
+              />
+              <DropdownMenuContent
+                align="start"
+                className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
+              >
+                <DropdownMenuGroup>
+                  <DropdownMenuItem>
+                    <KeyboardIcon />
+                    Keyboard Shortcuts
+                    <DropdownMenuShortcut>I</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

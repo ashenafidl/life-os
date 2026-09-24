@@ -4,9 +4,9 @@ import { TrendDownIcon, TrendUpIcon } from "@phosphor-icons/react";
 import { revalidateLogic } from "@tanstack/react-form";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { startOfDay } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { createCashTransaction } from "@/actions/finance";
+import { createCashTransaction, listCategories } from "@/actions/finance";
 import AppDialog from "@/components/shared/app-dialog";
 import { FieldGroup } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
@@ -16,13 +16,12 @@ import { useAppForm } from "@/hooks/use-form";
 import { cashTnxSchema } from "@/schemas/cash-transaction";
 import { TransactionType } from "@/types/transaction-types";
 
-export default function AddTransactionDialog({
-  allCategories,
-}: {
-  allCategories: (typeof categories.$inferSelect)[];
-}) {
+export default function AddTransactionDialog() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
+  const [allCategories, setAllCategories] = useState<
+    (typeof categories.$inferSelect)[]
+  >([]);
 
   useHotkey("Q", () => setOpen(true), {
     meta: {
@@ -57,6 +56,24 @@ export default function AddTransactionDialog({
       }
     },
   });
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    let cancelled = false;
+
+    listCategories().then((nextCategories) => {
+      if (!cancelled) {
+        setAllCategories(nextCategories);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   return (
     <AppDialog

@@ -5,9 +5,8 @@ import { HotkeysDevtoolsPanel } from "@tanstack/react-hotkeys-devtools";
 import { cn } from "cn";
 import type { Metadata } from "next";
 import { Figtree, IBM_Plex_Mono, Lora } from "next/font/google";
-import { Suspense } from "react";
 
-import AddTransactionDialogWrapper from "@/components/finance/transactions/add-transaction-dialog-wrapper";
+import AddTransactionDialog from "@/components/finance/transactions/add-transaction-dialog";
 import BreakpointIndicator from "@/components/shared/breakpoint-indicator";
 import HotkeysSheet from "@/components/shared/hotkeys-sheet";
 import ThemeProvider from "@/components/theme-provider";
@@ -24,7 +23,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: "LifeOS",
-  description: "Organization your life.",
+  description: "Organize your life.",
 };
 
 export default function RootLayout({
@@ -55,9 +54,7 @@ export default function RootLayout({
             <ModuleProvider>
               {children}
 
-              <Suspense fallback={null}>
-                <AddTransactionDialogWrapper />
-              </Suspense>
+              <AddTransactionDialog />
               <HotkeysSheet />
 
               <TanStackDevtools
