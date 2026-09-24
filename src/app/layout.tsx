@@ -5,6 +5,7 @@ import { HotkeysDevtoolsPanel } from "@tanstack/react-hotkeys-devtools";
 import { cn } from "cn";
 import type { Metadata } from "next";
 import { Figtree, IBM_Plex_Mono, Lora } from "next/font/google";
+import { Suspense } from "react";
 
 import AddTransactionDialogWrapper from "@/components/finance/transactions/add-transaction-dialog-wrapper";
 import BreakpointIndicator from "@/components/shared/breakpoint-indicator";
@@ -54,7 +55,9 @@ export default function RootLayout({
             <ModuleProvider>
               {children}
 
-              <AddTransactionDialogWrapper />
+              <Suspense fallback={null}>
+                <AddTransactionDialogWrapper />
+              </Suspense>
               <HotkeysSheet />
 
               <TanStackDevtools
