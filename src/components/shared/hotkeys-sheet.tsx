@@ -35,7 +35,7 @@ export default function HotkeysSheet() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetContent>
+      <SheetContent showCloseButton={false}>
         <SheetHeader>
           <SheetTitle>Keyboard shortcuts</SheetTitle>
           <SheetDescription>
