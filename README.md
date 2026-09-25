@@ -8,6 +8,10 @@ LifeOS is a personal productivity dashboard built with Next.js 16, React 19, Tai
 - Countdown timer events with customizable reminders
 - Drizzle ORM-powered PostgreSQL database and migrations
 
+### SMS messages
+
+LifeOS receives SMS messages from the companion [SMS Sync app](https://github.com/ashenafidl/sms-sync). Both apps use mDNS on the local network to find each other: LifeOS advertises its sync service as `_sms-sync._tcp.local` (or `_dev-sms-sync._tcp.local` in development), and the SMS Sync app discovers LifeOS there. The app then sends messages to LifeOS’s `/api/sms/sync` endpoint, where they are stored and processed for finance transaction matching.
+
 ## Tech Stack
 
 - Next.js 16
