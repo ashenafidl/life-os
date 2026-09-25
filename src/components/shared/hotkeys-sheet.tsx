@@ -1,7 +1,7 @@
 "use client";
 
 import { getHotkeyManager } from "@tanstack/react-hotkeys";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import HotkeysList from "@/components/shared/hotkeys-list";
 import {
@@ -11,13 +11,10 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { useHotkeysSheet } from "@/context/hotkey-sheet-context";
 
 export default function HotkeysSheet() {
-  const [open, setOpen] = useState(false);
-
-  const toggleOpen = useCallback(() => {
-    setOpen((prev) => !prev);
-  }, []);
+  const { open, setOpen, toggleOpen } = useHotkeysSheet();
 
   useEffect(() => {
     const handle = getHotkeyManager().register("I", toggleOpen, {

@@ -2,10 +2,11 @@
 
 import {
   CaretUpDownIcon,
+  GithubLogoIcon,
   KeyboardIcon,
   QuestionIcon,
 } from "@phosphor-icons/react";
-import { useHotkey } from "@tanstack/react-hotkeys";
+import { formatForDisplay, useHotkey } from "@tanstack/react-hotkeys";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -30,6 +31,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { modules, navItems } from "@/constants/module";
+import { useHotkeysSheet } from "@/context/hotkey-sheet-context";
 import { useModule } from "@/hooks/use-module";
 import { Module } from "@/types/module";
 
@@ -37,6 +39,7 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { toggleSidebar } = useSidebar();
+  const { setOpen: setHotkeysSheetOpen } = useHotkeysSheet();
 
   const { activeModule, setActiveModule } = useModule();
 
@@ -156,11 +159,22 @@ export default function AppSidebar() {
                 className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
               >
                 <DropdownMenuGroup>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setHotkeysSheetOpen(true)}>
                     <KeyboardIcon />
-                    Keyboard Shortcuts
-                    <DropdownMenuShortcut>I</DropdownMenuShortcut>
+                    <span>Keyboard Shortcuts</span>
+                    <DropdownMenuShortcut>
+                      {formatForDisplay("I")}
+                    </DropdownMenuShortcut>
                   </DropdownMenuItem>
+                  <a
+                    href="https://github.com/ashenafidl/life-os"
+                    target="_blank"
+                  >
+                    <DropdownMenuItem className="cursor-pointer">
+                      <GithubLogoIcon />
+                      <span>GitHub</span>
+                    </DropdownMenuItem>
+                  </a>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>

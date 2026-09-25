@@ -11,6 +11,7 @@ import BreakpointIndicator from "@/components/shared/breakpoint-indicator";
 import HotkeysSheet from "@/components/shared/hotkeys-sheet";
 import ThemeProvider from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { HotkeySheetProvider } from "@/context/hotkey-sheet-context";
 import { ModuleProvider } from "@/context/module-context";
 
 const loraHeading = Lora({ subsets: ["latin"], variable: "--font-heading" });
@@ -52,26 +53,28 @@ export default function RootLayout({
         >
           <TooltipProvider>
             <ModuleProvider>
-              {children}
+              <HotkeySheetProvider>
+                {children}
 
-              <AddTransactionDialog />
-              <HotkeysSheet />
+                <AddTransactionDialog />
+                <HotkeysSheet />
 
-              <TanStackDevtools
-                plugins={[
-                  { name: "Tanstack Form", render: <FormDevtoolsPanel /> },
-                  {
-                    name: "Tanstack Hotkeys",
-                    render: (
-                      <HotkeysDevtoolsPanel
-                        theme="light"
-                        devtoolsOpen={false}
-                      />
-                    ),
-                  },
-                ]}
-              />
-              <BreakpointIndicator />
+                <TanStackDevtools
+                  plugins={[
+                    { name: "Tanstack Form", render: <FormDevtoolsPanel /> },
+                    {
+                      name: "Tanstack Hotkeys",
+                      render: (
+                        <HotkeysDevtoolsPanel
+                          theme="light"
+                          devtoolsOpen={false}
+                        />
+                      ),
+                    },
+                  ]}
+                />
+                <BreakpointIndicator />
+              </HotkeySheetProvider>
             </ModuleProvider>
           </TooltipProvider>
         </ThemeProvider>
