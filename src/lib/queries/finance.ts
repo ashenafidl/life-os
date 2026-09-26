@@ -65,6 +65,8 @@ export const getBankBalances = cache(async () => {
       return {
         bankId: bank.id,
         bankName: bank.name,
+        bankLogo: bank.logoPath as string | null,
+        bankColors: bank.colors,
         balance: latest ? Number(latest.balanceAfter) : null, // null = no known balance yet
         asOf: latest?.occurredAt ?? null,
       };
@@ -72,6 +74,8 @@ export const getBankBalances = cache(async () => {
     {
       bankId: "0",
       bankName: "Cash",
+      bankLogo: "/image/cash.png",
+      bankColors: ["#6f5b21", "#b9a05a"],
       balance: cashBalance,
       asOf: lastTransactionDate,
     },

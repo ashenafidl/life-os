@@ -1,4 +1,6 @@
 import { WalletIcon } from "@phosphor-icons/react/dist/ssr";
+import { cn } from "cn";
+import Image from "next/image";
 
 import FormattedDate from "@/components/shared/formatted-date";
 import {
@@ -57,25 +59,58 @@ export default async function BalanceCards() {
         </Card>
       </div>
 
-      {balances.map((balance) => (
-        <Card
-          key={balance.bankId}
-          className="w-full max-w-fit shrink-0 shadow-none sm:w-[320px] lg:min-w-90"
-        >
-          <CardHeader>{balance.bankName}</CardHeader>
-          <CardContent className="flex flex-row items-end gap-2">
-            <h1 className="font-heading text-5xl">
-              {formatMoney(balance.balance ?? 0, { compact: false })}
-            </h1>
-            <span className="text-muted-foreground text-lg">ETB</span>
-          </CardContent>
-          <CardFooter>
-            <div className="text-muted-foreground text-xs">
-              <FormattedDate date={balance.asOf ?? new Date()} />
-            </div>
-          </CardFooter>
-        </Card>
-      ))}
+      {balances.map((balance) => {
+        const [brandFrom, brandTo] = balance.bankColors ?? [];
+        const branded = Boolean(brandFrom && brandTo);
+
+        return (
+          <Card
+            key={balance.bankId}
+            className={cn(
+              "w-full max-w-fit shrink-0 shadow-none sm:w-[320px] lg:min-w-90",
+              branded && "border-transparent text-white ring-black/20",
+            )}
+            style={
+              branded
+                ? {
+                    backgroundImage: `linear-gradient(to bottom right, ${brandFrom}, ${brandTo})`,
+                  }
+                : undefined
+            }
+          >
+            <CardHeader className="flex flex-row items-center gap-3">
+              {balance.bankLogo ? (
+                <Image
+                  src={balance.bankLogo}
+                  alt={balance.bankName}
+                  width={40}
+                  height={40}
+                  className="size-10 shrink-0 rounded-lg bg-white/90 object-contain p-1"
+                />
+              ) : (
+                <WalletIcon className="size-8 shrink-0 opacity-70" />
+              )}
+              <span className="truncate font-medium">{balance.bankName}</span>
+            </CardHeader>
+            <CardContent className="flex flex-row items-end gap-2">
+              <h1 className="font-heading text-5xl">
+                {formatMoney(balance.balance ?? 0, { compact: false })}
+              </h1>
+              <span className="text-lg opacity-80">ETB</span>
+            </CardContent>
+            <CardFooter>
+              <div
+                className={cn(
+                  "text-xs",
+                  branded ? "opacity-70" : "text-muted-foreground",
+                )}
+              >
+                <FormattedDate date={balance.asOf ?? new Date()} />
+              </div>
+            </CardFooter>
+          </Card>
+        );
+      })}
     </div>
   );
 }

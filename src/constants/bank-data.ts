@@ -18,6 +18,8 @@ export const bankData: SeedBank[] = [
     bank: {
       name: "Commercial Bank of Ethiopia",
       shortCodes: ["CBE"],
+      logoPath: "/image/cbe.png",
+      colors: ["#1b0b2e", "#3a0f5c"],
     },
     patterns: [
       {
@@ -68,8 +70,10 @@ export const bankData: SeedBank[] = [
   },
   {
     bank: {
-      name: "Telebirr",
+      name: "TeleBirr",
       shortCodes: ["127"],
+      logoPath: "/image/telebirr.png",
+      colors: ["#1d38e5", "#90d5ee"],
     },
     patterns: [
       {
@@ -126,6 +130,8 @@ export const bankData: SeedBank[] = [
     bank: {
       name: "Dashen Bank",
       shortCodes: ["DashenBank", "DB SuperApp"],
+      logoPath: "/image/dashen.png",
+      colors: ["#1a2d5c", "#344e7b"],
     },
     patterns: [
       {

@@ -60,6 +60,8 @@ export const banks = pgTable("banks", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull().unique(),
   shortCodes: text("short_codes").array().notNull(),
+  logoPath: text("logo_path"),
+  colors: text("colors").array(),
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

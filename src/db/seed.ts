@@ -21,7 +21,11 @@ async function seedBanksAndPatterns() {
       .values(item.bank)
       .onConflictDoUpdate({
         target: banks.name,
-        set: { shortCodes: item.bank.shortCodes },
+        set: {
+          shortCodes: item.bank.shortCodes,
+          logoPath: item.bank.logoPath,
+          colors: item.bank.colors,
+        },
       })
       .returning();
 

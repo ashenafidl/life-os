@@ -12,7 +12,8 @@ export default function BalanceCardSkeleton() {
       {Array.from({ length: 5 }).map((_, i) => (
         // oxlint-disable-next-line react/no-array-index-key
         <Card key={i} className="w-full shrink-0 sm:w-[320px] lg:w-90">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Skeleton className="size-10 shrink-0 rounded-lg" />
             <Skeleton className="h-5 w-32" />
           </CardHeader>
 
