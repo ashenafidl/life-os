@@ -340,13 +340,13 @@ function toTransactionValues(
     disasterRecovery: getNumericGroupValue(groups, "disasterRecovery"),
     balanceAfter: groups.balanceAfter ? stripCommas(groups.balanceAfter) : null,
     reference: groups.reference ?? null,
-    occurredAt: extractMessageDatetime(
-      msg.date,
-      groups.date,
-      groups.time,
-      pattern.dateFormat,
-      pattern.timeFormat,
-    ),
+    occurredAt: extractMessageDatetime({
+      fallback: msg.dateSent ?? msg.date,
+      date: groups.date,
+      time: groups.time,
+      dateFormat: pattern.dateFormat,
+      timeFormat: pattern.timeFormat,
+    }),
   };
 }
 

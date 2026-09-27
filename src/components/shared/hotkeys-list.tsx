@@ -43,51 +43,49 @@ export default function HotkeysList() {
 
   return (
     <div className="space-y-6">
-      {sortedGroups.map(([group, registrations]) => {
-        return (
-          <section key={group}>
-            <div className="flex items-center gap-2 border-b pb-2">
-              <h3 className="text-sm font-semibold">{group}</h3>
+      {sortedGroups.map(([group, registrations]) => (
+        <section key={group}>
+          <div className="flex items-center gap-2 border-b pb-2">
+            <h3 className="text-sm font-semibold">{group}</h3>
 
-              <span className="text-muted-foreground ml-auto text-xs">
-                {registrations.length}
-              </span>
-            </div>
+            <span className="text-muted-foreground ml-auto text-xs">
+              {registrations.length}
+            </span>
+          </div>
 
-            <div>
-              {registrations.map((reg) => {
-                const name = reg.options?.meta?.name;
-                const description = reg.options?.meta?.description;
+          <div>
+            {registrations.map((reg) => {
+              const name = reg.options?.meta?.name;
+              const description = reg.options?.meta?.description;
 
-                return (
-                  <div
-                    key={reg.hotkey}
-                    className="group/40 flex items-center gap-4 py-2"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
-                        {name ?? "Unnamed shortcut"}
+              return (
+                <div
+                  key={reg.hotkey}
+                  className="group/40 flex items-center gap-4 py-2"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">
+                      {name ?? "Unnamed shortcut"}
+                    </p>
+
+                    {description && (
+                      <p className="text-muted-foreground mt-0.5 truncate text-xs">
+                        {description}
                       </p>
-
-                      {description && (
-                        <p className="text-muted-foreground mt-0.5 truncate text-xs">
-                          {description}
-                        </p>
-                      )}
-                    </div>
-
-                    <Kbd>
-                      {formatForDisplay(reg.hotkey as never, {
-                        useSymbols: true,
-                      })}
-                    </Kbd>
+                    )}
                   </div>
-                );
-              })}
-            </div>
-          </section>
-        );
-      })}
+
+                  <Kbd>
+                    {formatForDisplay(reg.hotkey as never, {
+                      useSymbols: true,
+                    })}
+                  </Kbd>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }

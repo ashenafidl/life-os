@@ -34,8 +34,9 @@ export const smsMessages = pgTable("sms_messages", {
   id: uuid("id").primaryKey().defaultRandom(),
   smsId: integer("sms_id").notNull(),
   address: text("address").notNull(),
-  body: text("body").notNull(),
-  date: timestamp("received_at").notNull(), // when the phone received it
+  body: text("body").notNull().notNull(),
+  date: timestamp("date").notNull(),
+  dateSent: timestamp("date_sent").notNull(),
   rawHash: text("raw_hash").notNull().unique(), // sha256(address+body+receivedAt), for dedup
 
   // "pending" until a parse attempt runs. "parsed" once a transaction row

@@ -7,28 +7,28 @@ import { db } from "@/db/drizzle";
 import { smsMessages } from "@/db/schema/finance";
 import { parsePendingMessages } from "@/lib/sms-parser";
 
-const syncSchema = z.object({
-  messages: z
-    .array(
-      z.object({
-        smsId: z.number().int(),
-        address: z.string().min(1),
-        body: z.string().min(1),
-        date: z.coerce.date(),
-      }),
-    )
-    .min(1),
+const messageSchema = z.object({
+  id: z.number().int(),
+  address: z.string().optional(),
+  body: z.string().optional(),
+  date: z.coerce.date(),
+  dateSent: z.coerce.date(),
 });
 
-function hashMessage(
-  smsId: number,
-  address: string,
-  body: string,
-  date: string,
-) {
-  return createHash("sha256")
-    .update(`${smsId}:${address}:${body}:${date}`)
-    .digest("hex");
+const syncSchema = z.object({
+  messages: z.array(messageSchema),
+});
+
+function hashMessage(msg: z.infer<typeof messageSchema>) {
+  const input = [
+    msg.id,
+    msg.address ?? "",
+    msg.body ?? "",
+    msg.date.toISOString(),
+    msg.dateSent.toISOString(),
+  ].join(":");
+
+  return createHash("sha256").update(input).digest("base64url").slice(0, 22);
 }
 
 export async function POST(req: NextRequest) {
@@ -43,16 +43,12 @@ export async function POST(req: NextRequest) {
   }
 
   const rows = parsed.data.messages.map((msg) => ({
-    smsId: msg.smsId,
-    address: msg.address,
-    body: msg.body,
+    smsId: msg.id ?? 0,
+    address: msg.address ?? "Unknown",
+    body: msg.body ?? "",
     date: msg.date,
-    rawHash: hashMessage(
-      msg.smsId,
-      msg.address,
-      msg.body,
-      msg.date.toISOString(),
-    ),
+    dateSent: msg.dateSent,
+    rawHash: hashMessage(msg),
   }));
 
   // onConflictDoNothing on the (userId, rawHash) unique constraint means

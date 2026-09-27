@@ -38,9 +38,7 @@ import withPagination, { PaginatedResult } from "@/lib/with-pagination";
 import { CashBalance } from "@/types/cash-balance-types";
 import { MatchedField, TransactionReview } from "@/types/transaction-review";
 
-export const getBanks = cache(async () => {
-  return await db.select().from(banks);
-});
+export const getBanks = cache(async () => await db.select().from(banks));
 
 export const getBankBalances = cache(async () => {
   // "Latest transaction per bank, but only among ones where we actually
@@ -116,9 +114,14 @@ export const getDailyTotals = cache(
   },
 );
 
-export const getMessages = cache(async () => {
-  return await db.select().from(smsMessages).orderBy(desc(smsMessages.date));
-});
+export const getMessages = cache(
+  async () =>
+    await db
+      .select({ sms: smsMessages, bank: banks })
+      .from(smsMessages)
+      .leftJoin(banks, eq(smsMessages.bankId, banks.id))
+      .orderBy(desc(smsMessages.date)),
+);
 
 // Mirrors the field types in lib/filters.ts — kept separate since the query
 // layer only needs field->column mapping, not the UI's runtime bank options.
@@ -338,9 +341,9 @@ export const getTransactionReview = cache(
   },
 );
 
-export const getCategories = cache(async () => {
-  return await db.select().from(categories).orderBy(asc(categories.name));
-});
+export const getCategories = cache(
+  async () => await db.select().from(categories).orderBy(asc(categories.name)),
+);
 
 export const getCashBalance = cache(async (): Promise<CashBalance> => {
   const [{ net, lastDate }] = await db

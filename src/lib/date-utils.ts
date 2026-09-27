@@ -25,13 +25,19 @@ export function formatFullDateTime(date: Date | string): string {
   return format(d, "EEEE, MMMM d, yyyy 'at' HH:mm:ss");
 }
 
-export function extractMessageDatetime(
-  fallback: Date,
-  date?: string,
-  time?: string,
-  dateFormat?: string | null,
-  timeFormat?: string | null,
-): Date {
+export function extractMessageDatetime({
+  fallback,
+  date,
+  time,
+  dateFormat,
+  timeFormat,
+}: {
+  fallback: Date;
+  date?: string;
+  time?: string;
+  dateFormat?: string | null;
+  timeFormat?: string | null;
+}): Date {
   // If nothing provided, return fallback
   if (!date && !time) return fallback;
 

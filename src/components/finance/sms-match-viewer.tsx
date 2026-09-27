@@ -136,20 +136,18 @@ export default function SmsMatchViewer({ review, categories }: Props) {
 
               <DropdownMenuContent className="w-fit">
                 <DropdownMenuGroup>
-                  {remainingCategories.map((category) => {
-                    return (
-                      <DropdownMenuItem
-                        key={category.id}
-                        onClick={() => handleAddCategory(category.id)}
-                      >
-                        <span
-                          className="inline-block size-2 rounded-full"
-                          style={{ backgroundColor: category.color }}
-                        />
-                        <span>{category.name}</span>
-                      </DropdownMenuItem>
-                    );
-                  })}
+                  {remainingCategories.map((category) => (
+                    <DropdownMenuItem
+                      key={category.id}
+                      onClick={() => handleAddCategory(category.id)}
+                    >
+                      <span
+                        className="inline-block size-2 rounded-full"
+                        style={{ backgroundColor: category.color }}
+                      />
+                      <span>{category.name}</span>
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>

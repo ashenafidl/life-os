@@ -14,6 +14,8 @@ export default defineConfig({
     "react/no-children-prop": "off",
     "no-console": "warn",
     "jsx-a11y/alt-text": "error",
+    "prefer-arrow-callback": "error",
+    "arrow-body-style": "error",
   },
   ignorePatterns: ["src/components/ui/"],
 });

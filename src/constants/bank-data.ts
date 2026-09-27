@@ -133,35 +133,6 @@ export const bankData: SeedBank[] = [
       logoPath: "/image/dashen.png",
       colors: ["#1a2d5c", "#344e7b"],
     },
-    patterns: [
-      {
-        label: "Other bank transfer",
-        type: "expense",
-        regex:
-          "your\\s+account\\s+\\'(?<senderAccount>\\d+\\*{1,}\\d+)\\'\\s+is\\s+debited\\s+with\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d+)\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+at\\s+(?<time>\\d{2}:\\d{2}:\\d{2}\\s(?:AM|PM)).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+)",
-        dateFormat: "dd/MM/yyyy",
-        timeFormat: "hh:mm:ss a",
-      },
-      {
-        label: "Incoming transfer from Dashen (via 'DB SuperApp' shortcode)",
-        type: "income",
-        regex:
-          "Dear\\s+(?<recipientName>.+),\\s+you\\s+have\\s+received\\s+ETB\\s+(?<amount>[\\d,]+.\\d+)\\s+from\\s+(?<senderName>.+?)\\s+on\\s+(?<date>\\d{4}-\\d{2}-\\d{2})\\s+at\\s+(?<time>\\d{2}:\\d{2}:\\d{2})\\s+with\\s+transaction\\s+reference:\\s+(?<tnxID>[a-zA-Z0-9]+).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+).*?\\s+.+download\\s+receipt:\\s+=\\s+(?<reference>https:\\/\\/\\S+)\\.",
-      },
-      {
-        label: "Incoming transfer from Dashen (via 'DashenBank' shortcode)",
-        type: "income",
-        regex:
-          "your\\s+account\\s+'(?<recipientAccount>\\d+\\*{1,}\\d+)'\\s+is\\s+credited\\s+with\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d+)\\s+from\\s+(?<senderName>.+?)\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+at\\s+(?<time>\\d{2}:\\d{2}:\\d{2}\\s(?:AM|PM)).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+)",
-        dateFormat: "dd/MM/yyyy",
-        timeFormat: "hh:mm:ss a",
-      },
-      {
-        label: "Outgoing transfer to Dashen Bank",
-        type: "expense",
-        regex:
-          "Dear\\s+(?<senderName>[A-Za-z\\s]+?),\\s+you\\s+have\\s+successfully\\s+transferred\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d{2})\\s+from\\s+your\\s+account\\s+number\\s+(?<senderAccount>\\d+\\*+\\d+)\\s+to\\s+(?<recipientName>[A-Za-z\\s]+?)'s\\s+account\\s+number\\s+(?<recipientAccount>\\d+\\*+\\d+)\\s+on\\s+(?<date>\\d{4}-\\d{2}-\\d{2})\\s+at\\s+(?<time>\\d{2}:\\d{2}:\\d{2})\\s+with\\s+transaction\\s+reference:\\s+(?<tnxID>[A-Za-z0-9]+)\\.\\s+The\\s+service\\s+charge\\s+is\\s+ETB\\s+(?<serviceCharge>[\\d,]+\\.\\d{2}),\\s+VAT\\s+\\(15%\\)\\s+ETB\\s+(?<vat>[\\d,]+\\.\\d{2})\\s+and\\s+DRRF\\s+\\(5%\\)\\s+ETB\\s+(?<disasterRecovery>[\\d,]+\\.\\d{2})\\.\\s+Your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d{2})\\.\\s+Download\\s+receipt:\\s+=\\s+\\[?(?<reference>https:\\/\\/\\S+)\\.",
-      },
-    ],
+    patterns: [],
   },
 ];
