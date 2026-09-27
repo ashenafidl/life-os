@@ -119,7 +119,7 @@ export const getMessages = cache(
     await db
       .select({ sms: smsMessages, bank: banks })
       .from(smsMessages)
-      .leftJoin(banks, eq(smsMessages.bankId, banks.id))
+      .innerJoin(banks, eq(smsMessages.bankId, banks.id))
       .orderBy(desc(smsMessages.date)),
 );
 
