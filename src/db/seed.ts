@@ -12,6 +12,7 @@ const defaultCategories = [
   { name: "Transfer", color: "#64748B" },
   { name: "Transport", color: "#3B82F6" },
   { name: "Airtime & Data", color: "#06B6D4" },
+  { name: "Gift", color: "#06B6D4" },
 ];
 
 async function seedBanksAndPatterns() {
