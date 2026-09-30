@@ -1,7 +1,4 @@
 import "./globals.css";
-import { TanStackDevtools } from "@tanstack/react-devtools";
-import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
-import { HotkeysDevtoolsPanel } from "@tanstack/react-hotkeys-devtools";
 import { cn } from "cn";
 import type { Metadata } from "next";
 import { Figtree, IBM_Plex_Mono, Lora } from "next/font/google";
@@ -13,6 +10,11 @@ import ThemeProvider from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { HotkeySheetProvider } from "@/context/hotkey-sheet-context";
 import { ModuleProvider } from "@/context/module-context";
+
+const DevTools: React.ComponentType =
+  process.env.NODE_ENV === "development"
+    ? (await import("@/components/dev-tools")).default
+    : () => null;
 
 const loraHeading = Lora({ subsets: ["latin"], variable: "--font-heading" });
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
@@ -58,21 +60,7 @@ export default function RootLayout({
 
                 <AddTransactionDialog />
                 <HotkeysSheet />
-
-                <TanStackDevtools
-                  plugins={[
-                    { name: "Tanstack Form", render: <FormDevtoolsPanel /> },
-                    {
-                      name: "Tanstack Hotkeys",
-                      render: (
-                        <HotkeysDevtoolsPanel
-                          theme="light"
-                          devtoolsOpen={false}
-                        />
-                      ),
-                    },
-                  ]}
-                />
+                <DevTools />
                 <BreakpointIndicator />
               </HotkeySheetProvider>
             </ModuleProvider>
