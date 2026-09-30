@@ -4,9 +4,12 @@ import {
   bankPatterns,
   banks,
   categories,
+  peoples,
+  personAliases,
   smsMessages,
   transactionCategories,
   transactionLinks,
+  transactionPeople,
   transactions,
 } from "@/db/schema/finance";
 
@@ -19,6 +22,9 @@ export const relations = defineRelations(
     transactionCategories,
     transactionLinks,
     categories,
+    peoples,
+    personAliases,
+    transactionPeople,
   },
   (r) => ({
     banks: {
@@ -86,6 +92,10 @@ export const relations = defineRelations(
         from: r.transactions.id,
         to: r.transactionLinks.linkedTransactionId,
       }),
+      personLink: r.one.transactionPeople({
+        from: r.transactions.id,
+        to: r.transactionPeople.transactionId,
+      }),
     },
 
     categories: {
@@ -114,6 +124,35 @@ export const relations = defineRelations(
       linkedTransaction: r.one.transactions({
         from: r.transactionLinks.linkedTransactionId,
         to: r.transactions.id,
+      }),
+    },
+
+    peoples: {
+      aliases: r.many.personAliases({
+        from: r.peoples.id,
+        to: r.personAliases.personId,
+      }),
+      transactionLinks: r.many.transactionPeople({
+        from: r.peoples.id,
+        to: r.transactionPeople.personId,
+      }),
+    },
+
+    personAliases: {
+      person: r.one.peoples({
+        from: r.personAliases.personId,
+        to: r.peoples.id,
+      }),
+    },
+
+    transactionPeople: {
+      transaction: r.one.transactions({
+        from: r.transactionPeople.transactionId,
+        to: r.transactions.id,
+      }),
+      person: r.one.peoples({
+        from: r.transactionPeople.personId,
+        to: r.peoples.id,
       }),
     },
   }),

@@ -22,6 +22,7 @@ import {
   getBanks,
   getCategories,
   getTransactionReview,
+  loadPeopleWithAliases,
 } from "@/lib/queries/finance";
 
 export default async function TransactionsPage({
@@ -34,9 +35,10 @@ export default async function TransactionsPage({
   const page = Math.max(1, Number(pageParam) || 1);
   const filters = decodeFilters(filtersParam);
 
-  const [banks, categories, result] = await Promise.all([
+  const [banks, categories, peoples, result] = await Promise.all([
     getBanks(),
     getCategories(),
+    loadPeopleWithAliases(),
     getTransactionReview({ page, pageSize: 50, filters }),
   ]);
 
@@ -46,6 +48,7 @@ export default async function TransactionsPage({
       value: category.id,
       label: category.name,
     })),
+    peoples.map((person) => ({ value: person.id, label: person.name })),
   );
 
   const start = (result.meta.page - 1) * result.meta.pageSize + 1;
@@ -93,6 +96,7 @@ export default async function TransactionsPage({
                   key={review.transaction.id}
                   review={review}
                   categories={categories}
+                  peoples={peoples}
                 />
               ))}
             </>

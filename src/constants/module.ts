@@ -4,6 +4,7 @@ import {
   ClockCountdownIcon,
   SquaresFourIcon,
   TrayIcon,
+  UsersIcon,
 } from "@phosphor-icons/react";
 import { Route } from "next";
 
@@ -38,6 +39,7 @@ export const navItems: Record<string, NavItem[]> = {
       label: "Transactions",
       href: "/finance/transactions" as Route,
     },
+    { icon: UsersIcon, label: "Peoples", href: "/finance/peoples" as Route },
     { icon: TrayIcon, label: "Inbox", href: "/finance/inbox" as Route },
   ],
   countdown: [

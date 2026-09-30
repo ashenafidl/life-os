@@ -10,6 +10,7 @@ import {
   transactions,
 } from "@/db/schema/finance";
 import { extractMessageDatetime } from "@/lib/date-utils";
+import { autoMatchTransaction } from "@/lib/peoples-matcher";
 import { MatchedField } from "@/types/transaction-review";
 
 type SmsMessage = typeof smsMessages.$inferSelect;
@@ -523,12 +524,12 @@ type ParseOutcome = "parsed" | "duplicate" | "unmatched";
 async function parseMessage(
   msg: SmsMessage,
   allBanks: BankWithPatterns[],
-): Promise<ParseOutcome> {
+): Promise<{ outcome: ParseOutcome; transactionId?: string }> {
   const bank = findBank(msg.address, allBanks);
 
   if (!bank) {
     await markUnmatched(msg);
-    return "unmatched";
+    return { outcome: "unmatched" as const };
   }
 
   const result = matchPattern(msg.body, bank.patterns);
@@ -539,7 +540,7 @@ async function parseMessage(
     // regex for yet. bankId being set is what lets a review UI tell these
     // apart from truly-unrecognized senders.
     await markUnmatched(msg, bank.id);
-    return "unmatched";
+    return { outcome: "unmatched" as const };
   }
 
   const { pattern, groups } = result;
@@ -559,7 +560,7 @@ async function parseMessage(
     });
 
     await markUnmatched(msg, bank.id);
-    return "unmatched";
+    return { outcome: "unmatched" as const };
   }
 
   return db.transaction(async (tx) => {
@@ -588,16 +589,17 @@ async function parseMessage(
         })
         .where(eq(smsMessages.id, msg.id));
 
-      return "duplicate";
+      return { outcome: "duplicate" as const, transactionId: existing.id };
     }
 
-    await tx
+    const [inserted] = await tx
       .insert(transactions)
       .values({ smsMessageId: msg.id, ...values, amount: values.amount ?? 0 })
       .onConflictDoUpdate({
         target: transactions.smsMessageId,
         set: values,
-      });
+      })
+      .returning({ id: transactions.id });
 
     await tx
       .update(smsMessages)
@@ -608,7 +610,7 @@ async function parseMessage(
       })
       .where(eq(smsMessages.id, msg.id));
 
-    return "parsed";
+    return { outcome: "parsed" as const, transactionId: inserted?.id };
   });
 }
 
@@ -624,10 +626,14 @@ export async function parseMessages(messages: SmsMessage[]) {
   let unmatched = 0;
 
   for (const msg of messages) {
-    const outcome = await parseMessage(msg, allBanks);
+    const { outcome, transactionId } = await parseMessage(msg, allBanks);
     if (outcome === "parsed") parsed++;
     else if (outcome === "duplicate") duplicate++;
     else unmatched++;
+
+    if (transactionId) {
+      await autoMatchTransaction(transactionId);
+    }
   }
 
   console.log({ attempted: messages.length, parsed, duplicate, unmatched });

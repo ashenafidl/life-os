@@ -11,6 +11,7 @@ import { useState, useTransition } from "react";
 import { updateTransactionCategories } from "@/actions/finance";
 import FieldList from "@/components/finance/field-list";
 import HighlightedBody from "@/components/finance/highlighted-body";
+import PersonMatchField from "@/components/finance/person-match-field";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -21,15 +22,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 import { categories } from "@/db/schema/finance";
+import { PersonWithAliases } from "@/lib/name-matching";
 import { TransactionReview } from "@/types/transaction-review";
 
 interface Props {
   review: TransactionReview;
   categories: (typeof categories.$inferSelect)[];
+  peoples: PersonWithAliases[];
 }
 
-export default function SmsMatchViewer({ review, categories }: Props) {
+export default function SmsMatchViewer({ review, categories, peoples }: Props) {
   const [active, setActive] = useState<string>();
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(() =>
     review.categories.map((category) => category.id),
@@ -92,7 +96,9 @@ export default function SmsMatchViewer({ review, categories }: Props) {
           setActive={setActive}
         />
 
-        <div className="mt-4 border-t pt-4">
+        <Separator className="my-4" />
+
+        <div>
           <p className="text-muted-foreground mb-2 text-xs tracking-wide uppercase">
             Categories
           </p>
@@ -153,6 +159,14 @@ export default function SmsMatchViewer({ review, categories }: Props) {
             </DropdownMenu>
           </div>
         </div>
+
+        <PersonMatchField
+          transactionId={review.transaction.id}
+          transaction={review.transaction}
+          person={review.person}
+          personSource={review.personSource}
+          people={peoples}
+        />
       </div>
 
       <div>

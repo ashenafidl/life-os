@@ -80,12 +80,7 @@ export default function AppDialog({
   if (variant === "alert") {
     return (
       <AlertDialog open={isOpen} onOpenChange={setOpen}>
-        {trigger && (
-          <AlertDialogTrigger
-            render={trigger as ReactElement}
-            nativeButton={false}
-          />
-        )}
+        {trigger && <AlertDialogTrigger render={trigger as ReactElement} />}
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{title}</AlertDialogTitle>
@@ -106,9 +101,7 @@ export default function AppDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={setOpen}>
-      {trigger && (
-        <DialogTrigger render={trigger as ReactElement} nativeButton={false} />
-      )}
+      {trigger && <DialogTrigger render={trigger as ReactElement} />}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

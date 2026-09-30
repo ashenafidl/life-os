@@ -89,7 +89,7 @@ export default function FilterEditor({
                   });
                 }}
               >
-                <SelectTrigger className="h-8! min-w-36">
+                <SelectTrigger className="h-8!">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -111,7 +111,7 @@ export default function FilterEditor({
                   })
                 }
               >
-                <SelectTrigger className="h-8! w-36">
+                <SelectTrigger className="h-8!">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -157,7 +157,7 @@ export default function FilterEditor({
                     });
                   }}
                 >
-                  <SelectTrigger className="h-8! min-w-40">
+                  <SelectTrigger className="h-8!">
                     <SelectValue placeholder="Select…" />
                   </SelectTrigger>
                   <SelectContent>

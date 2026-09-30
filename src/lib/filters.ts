@@ -21,6 +21,8 @@ export interface FilterCondition {
 
 export const UNCATEGORIZED_CATEGORY_VALUE = "__uncategorized__";
 
+export const UNLINKED_PERSON_VALUE = "__unlinked__";
+
 export function parseFilterValues(value: string | null | undefined): string[] {
   return (value ?? "")
     .split(",")
@@ -39,13 +41,13 @@ export const OPERATORS_BY_TYPE: Record<FieldType, FieldOption[]> = {
   ],
   number: [
     { value: "equals", label: "equals" },
-    { value: "gt", label: "greater than" },
-    { value: "lt", label: "less than" },
+    { value: "gt", label: "gt" },
+    { value: "lt", label: "lt" },
   ],
   select: [{ value: "equals", label: "equals" }],
-  "multi-select": [{ value: "equals", label: "is one of" }],
+  "multi-select": [{ value: "is one of", label: "is one of" }],
   date: [
-    { value: "equals", label: "is" },
+    { value: "is", label: "is" },
     { value: "before", label: "before" },
     { value: "after", label: "after" },
   ],
@@ -65,13 +67,12 @@ const BASE_FILTER_FIELDS: FilterFieldConfig[] = [
   },
   { key: "amount", label: "Amount", type: "number" },
   { key: "occurredAt", label: "Date", type: "date" },
-  { key: "recipientName", label: "Recipient", type: "text" },
-  { key: "senderName", label: "Sender", type: "text" },
 ];
 
 export function buildFilterFields(
   bankOptions: FieldOption[],
   categoryOptions: FieldOption[],
+  peopleOptions: FieldOption[],
 ): FilterFieldConfig[] {
   return [
     { key: "bankId", label: "Bank", type: "select", options: bankOptions },
@@ -84,6 +85,18 @@ export function buildFilterFields(
         {
           value: UNCATEGORIZED_CATEGORY_VALUE,
           label: "Uncategorized",
+        },
+      ],
+    },
+    {
+      key: "personId",
+      label: "Person",
+      type: "multi-select",
+      options: [
+        ...peopleOptions,
+        {
+          value: UNLINKED_PERSON_VALUE,
+          label: "Unlinked",
         },
       ],
     },

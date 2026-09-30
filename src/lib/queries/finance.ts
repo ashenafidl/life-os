@@ -24,8 +24,11 @@ import {
   bankPatterns,
   banks,
   categories,
+  peoples,
+  personAliases,
   smsMessages,
   transactionCategories,
+  transactionPeople,
   transactions,
 } from "@/db/schema/finance";
 import {
@@ -33,7 +36,9 @@ import {
   FilterCondition,
   parseFilterValues,
   UNCATEGORIZED_CATEGORY_VALUE,
+  UNLINKED_PERSON_VALUE,
 } from "@/lib/filters";
+import { PersonWithAliases } from "@/lib/name-matching";
 import withPagination, { PaginatedResult } from "@/lib/with-pagination";
 import { CashBalance } from "@/types/cash-balance-types";
 import { MatchedField, TransactionReview } from "@/types/transaction-review";
@@ -130,9 +135,8 @@ const FIELD_TYPES: Record<string, FieldType> = {
   type: "select",
   amount: "number",
   occurredAt: "date",
-  recipientName: "text",
-  senderName: "text",
   categoryId: "multi-select",
+  personId: "multi-select",
 };
 
 const FILTER_COLUMNS = {
@@ -140,9 +144,8 @@ const FILTER_COLUMNS = {
   type: transactions.type,
   amount: transactions.totalAmount,
   occurredAt: transactions.occurredAt,
-  recipientName: transactions.recipientName,
-  senderName: transactions.senderName,
   categoryId: transactions.id,
+  personId: transactions.id,
 };
 
 const conditionToSql = (condition: FilterCondition): SQL | undefined => {
@@ -188,6 +191,48 @@ const conditionToSql = (condition: FilterCondition): SQL | undefined => {
     }
 
     return categoryMatchClause ?? uncategorizedClause;
+  }
+
+  if (condition.field === "personId") {
+    const selectedValues = parseFilterValues(condition.value);
+    const selectedPeople = selectedValues.filter(
+      (value) => value !== UNLINKED_PERSON_VALUE,
+    );
+    const includeUnlinked = selectedValues.includes(UNLINKED_PERSON_VALUE);
+
+    if (selectedPeople.length === 0 && !includeUnlinked) {
+      return undefined;
+    }
+
+    const personMatchClause =
+      selectedPeople.length > 0
+        ? exists(
+            db
+              .select()
+              .from(transactionPeople)
+              .where(
+                and(
+                  eq(transactionPeople.transactionId, transactions.id),
+                  inArray(transactionPeople.personId, selectedPeople),
+                ),
+              ),
+          )
+        : undefined;
+
+    const unlinkedClause = includeUnlinked
+      ? notExists(
+          db
+            .select()
+            .from(transactionPeople)
+            .where(eq(transactionPeople.transactionId, transactions.id)),
+        )
+      : undefined;
+
+    if (personMatchClause && unlinkedClause) {
+      return or(personMatchClause, unlinkedClause);
+    }
+
+    return personMatchClause ?? unlinkedClause;
   }
 
   const column = FILTER_COLUMNS[condition.field as keyof typeof FILTER_COLUMNS];
@@ -291,6 +336,33 @@ export const getTransactionReview = cache(
       categoryMap.set(row.transactionId, [...existing, row.category]);
     }
 
+    const linkedPeople =
+      transactionIds.length > 0
+        ? await db
+            .select({
+              transactionId: transactionPeople.transactionId,
+              person: peoples,
+              source: transactionPeople.source,
+            })
+            .from(transactionPeople)
+            .innerJoin(peoples, eq(transactionPeople.personId, peoples.id))
+            .where(inArray(transactionPeople.transactionId, transactionIds))
+        : [];
+
+    const peopleMap = new Map<
+      string,
+      {
+        person: typeof peoples.$inferSelect;
+        source: (typeof transactionPeople.$inferSelect)["source"];
+      }
+    >();
+    for (const row of linkedPeople) {
+      peopleMap.set(row.transactionId, {
+        person: row.person,
+        source: row.source,
+      });
+    }
+
     const data = rows.map((row) => {
       const fields: MatchedField[] = [];
 
@@ -324,6 +396,8 @@ export const getTransactionReview = cache(
         fields,
         pattern: row.pattern,
         categories: categoryMap.get(row.transaction.id) ?? [],
+        person: peopleMap.get(row.transaction.id)?.person ?? null,
+        personSource: peopleMap.get(row.transaction.id)?.source ?? null,
       };
     });
 
@@ -364,3 +438,94 @@ export const getCashBalance = cache(async (): Promise<CashBalance> => {
     lastTransactionDate: lastDate ?? new Date(),
   };
 });
+
+export interface PeopleOverviewRow {
+  person: typeof peoples.$inferSelect;
+  aliases: string[];
+  sent: number;
+  received: number;
+  transactionCount: number;
+}
+
+export const getPeoplesOverview = cache(
+  async (): Promise<PeopleOverviewRow[]> => {
+    const [rows, aliasRows] = await Promise.all([
+      db
+        .select({
+          person: peoples,
+          sent: sql<string>`coalesce(sum(case when ${transactions.type} = 'expense' then ${transactions.totalAmount} else 0 end), 0)`,
+          received: sql<string>`coalesce(sum(case when ${transactions.type} = 'income' then ${transactions.totalAmount} else 0 end), 0)`,
+          transactionCount: count(transactionPeople.transactionId),
+        })
+        .from(peoples)
+        .leftJoin(transactionPeople, eq(transactionPeople.personId, peoples.id))
+        .leftJoin(
+          transactions,
+          eq(transactions.id, transactionPeople.transactionId),
+        )
+        .groupBy(peoples.id)
+        .orderBy(asc(peoples.name)),
+      db.select().from(personAliases),
+    ]);
+
+    const aliasesByPerson = new Map<string, string[]>();
+    for (const alias of aliasRows) {
+      const existing = aliasesByPerson.get(alias.personId) ?? [];
+      existing.push(alias.alias);
+      aliasesByPerson.set(alias.personId, existing);
+    }
+
+    return rows.map((row) => ({
+      person: row.person,
+      aliases: aliasesByPerson.get(row.person.id) ?? [],
+      sent: Number(row.sent),
+      received: Number(row.received),
+      transactionCount: row.transactionCount,
+    }));
+  },
+);
+
+export const getPersonDetail = cache(async (personId: string) => {
+  const person = await db.query.peoples.findFirst({
+    where: { id: personId },
+    with: { aliases: true },
+  });
+
+  if (!person) return null;
+
+  const links = await db
+    .select({
+      transaction: transactions,
+      bankName: banks.name,
+      source: transactionPeople.source,
+    })
+    .from(transactionPeople)
+    .innerJoin(
+      transactions,
+      eq(transactionPeople.transactionId, transactions.id),
+    )
+    .leftJoin(banks, eq(transactions.bankId, banks.id))
+    .where(eq(transactionPeople.personId, personId))
+    .orderBy(desc(transactions.occurredAt));
+
+  const sent = links
+    .filter((link) => link.transaction.type === "expense")
+    .reduce((sum, link) => sum + Number(link.transaction.totalAmount), 0);
+  const received = links
+    .filter((link) => link.transaction.type === "income")
+    .reduce((sum, link) => sum + Number(link.transaction.totalAmount), 0);
+
+  return { person, links, sent, received };
+});
+
+export async function loadPeopleWithAliases(): Promise<PersonWithAliases[]> {
+  const rows = await db.query.peoples.findMany({
+    with: { aliases: true },
+    orderBy: (peoples, { asc }) => [asc(peoples.name)],
+  });
+  return rows.map((person) => ({
+    id: person.id,
+    name: person.name,
+    aliases: person.aliases.map((alias) => alias.alias),
+  }));
+}

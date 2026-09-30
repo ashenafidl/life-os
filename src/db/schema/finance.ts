@@ -30,6 +30,8 @@ export const transactionLinkTypeEnum = pgEnum("transaction_link_type", [
 
 export const accountTypeEnum = pgEnum("account_type", ["bank", "cash"]);
 
+export const matchSourceEnum = pgEnum("match_source", ["auto", "manual"]);
+
 export const smsMessages = pgTable("sms_messages", {
   id: uuid("id").primaryKey().defaultRandom(),
   smsId: integer("sms_id").notNull(),
@@ -140,6 +142,45 @@ export const transactionCategories = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [primaryKey({ columns: [table.transactionId, table.categoryId] })],
+);
+
+export const peoples = pgTable("peoples", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const personAliases = pgTable(
+  "person_aliases",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    personId: uuid("person_id")
+      .notNull()
+      .references(() => peoples.id, { onDelete: "cascade" }),
+    alias: text("alias").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("unique_person_alias").on(table.personId, table.alias),
+  ],
+);
+
+export const transactionPeople = pgTable(
+  "transaction_people",
+  {
+    transactionId: uuid("transaction_id")
+      .notNull()
+      .references(() => transactions.id, { onDelete: "cascade" }),
+    personId: uuid("person_id")
+      .notNull()
+      .references(() => peoples.id, { onDelete: "cascade" }),
+    source: matchSourceEnum("source").notNull().default("auto"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.transactionId, table.personId] }),
+    uniqueIndex("unique_transaction_person").on(table.transactionId),
+  ],
 );
 
 // One-to-one link between a transaction and the original it relates to.
