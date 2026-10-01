@@ -133,6 +133,23 @@ export const bankData: SeedBank[] = [
       logoPath: "/image/dashen.png",
       colors: ["#1a2d5c", "#344e7b"],
     },
-    patterns: [],
+    patterns: [
+      {
+        label: "Incoming transfer from Dashen Bank",
+        type: "income",
+        regex:
+          "Dear\\s+(?<recipientName>.+?),\\s+you\\s+have\\s+received\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d+).from\\s+(?<senderName>.+?).on\\s+(?<date>\\d{4}-\\d{2}-\\d{2})\\s+at\\s+(?<time>\\d{2}:\\d{2}:\\d{2})\\s+with\\s+transaction\\s+reference:\\s+(?<tnxID>[a-zA-Z0-9]+).\\s+Your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+).+Download\\s+receipt:\\s+=\\s+(?<reference>https:\\/\\/\\S+)\\.",
+        dateFormat: "yyyy-MM-dd",
+        timeFormat: "hh:mm:ss",
+      },
+      {
+        label: "Incoming transfer from Dashen Bank ('DashenBank' short code)",
+        type: "income",
+        regex:
+          "your\\s+account\\s+'(?<recipientAccount>\\d+\\*{1,}\\d+)'\\s+is\\s+credited\\s+with\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d+)\\s+from\\s+(?<senderName>.+?)\\\s+on\\s+(?<date>\\d{2}\\/\\d{2}\\/\\d{4})\\s+at\\s+(?<time>\\d{2}:\\d{2}:\\d{2}\\s(?:AM|PM)).\\s+your\\s+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+)",
+        dateFormat: "dd/MM/yyyy",
+        timeFormat: "hh:mm:ss a",
+      },
+    ],
   },
 ];

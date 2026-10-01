@@ -572,6 +572,10 @@ async function parseMessage(
       // stays the original ("parsed", owns the transaction row); everything
       // after it is marked "duplicate". Combine any info the original is
       // missing (e.g. tnxId) into it rather than creating a second row.
+      await tx
+        .delete(transactions)
+        .where(eq(transactions.smsMessageId, msg.id));
+
       const update = mergeTransactionValues(existing, values);
       if (Object.keys(update).length > 0) {
         await tx

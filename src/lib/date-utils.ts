@@ -25,6 +25,44 @@ export function formatFullDateTime(date: Date | string): string {
   return format(d, "EEEE, MMMM d, yyyy 'at' HH:mm:ss");
 }
 
+const AMBIGUOUS_HOUR_FORMAT = /^hh(?!.*\ba\b)/i; // "hh" without a trailing "a" token — 12-hour digits, no meridiem
+
+function resolveAmbiguous12Hour(
+  rawHour: number,
+  minutes: number,
+  seconds: number,
+  year: number,
+  month: number,
+  day: number,
+  fallback: Date,
+): { hours: number } {
+  // "hh" is 1–12 with no AM/PM marker, so rawHour alone can't tell us which
+  // half of the day it's in. Build both candidates and keep whichever is
+  // closer to the fallback (the phone's actual SMS receipt time) — the real
+  // transaction and its notification happen close together, so the wrong
+  // half of the day will be off by roughly 12 hours (give or take the
+  // genuine minutes/seconds gap between the transaction and the SMS
+  // landing), while the right one will only be off by that small gap.
+  const amHour = rawHour === 12 ? 0 : rawHour;
+  const pmHour = rawHour === 12 ? 12 : rawHour + 12;
+
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const buildCandidate = (hour: number) =>
+    fromZonedTime(
+      `${year}-${pad(month + 1)}-${pad(day)} ${pad(hour)}:${pad(minutes)}:${pad(seconds)}`,
+      SMS_TIMEZONE,
+    );
+
+  const amDiff = Math.abs(
+    buildCandidate(amHour).getTime() - fallback.getTime(),
+  );
+  const pmDiff = Math.abs(
+    buildCandidate(pmHour).getTime() - fallback.getTime(),
+  );
+
+  return { hours: amDiff <= pmDiff ? amHour : pmHour };
+}
+
 export function extractMessageDatetime({
   fallback,
   date,
@@ -64,13 +102,33 @@ export function extractMessageDatetime({
   let seconds = 0;
 
   if (time) {
-    const parsedTime = timeFormat
-      ? parse(time, timeFormat, REFERENCE_DATE)
-      : new Date(`1970-01-01T${time}`);
-    if (!isValid(parsedTime)) return fallback;
-    hours = parsedTime.getHours();
-    minutes = parsedTime.getMinutes();
-    seconds = parsedTime.getSeconds();
+    if (timeFormat && AMBIGUOUS_HOUR_FORMAT.test(timeFormat.trim())) {
+      // 12-hour digits with no AM/PM in the string — parse the raw numbers
+      // only (don't trust date-fns' own AM/PM assumption for a bare "hh"),
+      // then disambiguate against the fallback.
+      const match = time.match(/(\d{1,2}):(\d{2}):(\d{2})/);
+      if (!match) return fallback;
+      const [, h, m, s] = match;
+      minutes = Number(m);
+      seconds = Number(s);
+      hours = resolveAmbiguous12Hour(
+        Number(h),
+        minutes,
+        seconds,
+        year,
+        month,
+        day,
+        fallback,
+      ).hours;
+    } else {
+      const parsedTime = timeFormat
+        ? parse(time, timeFormat, REFERENCE_DATE)
+        : new Date(`1970-01-01T${time}`);
+      if (!isValid(parsedTime)) return fallback;
+      hours = parsedTime.getHours();
+      minutes = parsedTime.getMinutes();
+      seconds = parsedTime.getSeconds();
+    }
   }
 
   const pad = (n: number) => String(n).padStart(2, "0");
