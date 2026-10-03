@@ -1,6 +1,7 @@
 "use client";
 
 import { MoonIcon, SunIcon } from "@phosphor-icons/react";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { useTheme } from "next-themes";
 
 import { Button } from "@/components/ui/button";
@@ -12,24 +13,57 @@ interface Props {
 export default function ThemeSwitcher({ size }: Props) {
   const { theme, setTheme } = useTheme();
 
-  const handleChange = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const toggleThemeWithViewTransition = (
+    eventOrCoords:
+      | React.MouseEvent<HTMLButtonElement>
+      | { x: number; y: number },
+  ) => {
     const nextTheme = theme === "dark" ? "light" : "dark";
 
-    // Browsers without View Transitions support (Firefox, older Safari)
-    // just get an instant toggle — no error, no broken animation.
     if (!document.startViewTransition) {
       setTheme(nextTheme);
       return;
     }
 
-    // Anchor the sweep at the exact point clicked, not the screen center.
-    const { clientX, clientY } = event;
-    document.documentElement.style.setProperty("--sweep-x", `${clientX}px`);
-    document.documentElement.style.setProperty("--sweep-y", `${clientY}px`);
+    let x: number;
+    let y: number;
+
+    if ("clientX" in eventOrCoords) {
+      // Click event
+      x = eventOrCoords.clientX;
+      y = eventOrCoords.clientY;
+    } else {
+      // Fixed coords (e.g. from hotkey)
+      x = eventOrCoords.x;
+      y = eventOrCoords.y;
+    }
+
+    document.documentElement.style.setProperty("--sweep-x", `${x}px`);
+    document.documentElement.style.setProperty("--sweep-y", `${y}px`);
 
     document.startViewTransition(() => {
       setTheme(nextTheme);
     });
+  };
+
+  useHotkey(
+    "D",
+    () =>
+      toggleThemeWithViewTransition({
+        x: window.innerWidth - 16,
+        y: 16,
+      }),
+    {
+      meta: {
+        name: "Toggle theme",
+        description: "Switch between light and dark mode",
+        group: "General",
+      },
+    },
+  );
+
+  const handleChange = (event: React.MouseEvent<HTMLButtonElement>) => {
+    toggleThemeWithViewTransition(event);
   };
 
   return (
