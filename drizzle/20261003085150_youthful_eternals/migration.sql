@@ -1,0 +1,1 @@
+ALTER TABLE "transactions" ALTER COLUMN "occurred_at" SET DATA TYPE timestamp with time zone USING "occurred_at"::timestamp with time zone;

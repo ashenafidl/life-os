@@ -1,10 +1,8 @@
 import { cn } from "cn";
 import { addDays, format, startOfDay } from "date-fns";
-import { and, eq, gte, lt } from "drizzle-orm";
 
-import { db } from "@/db/drizzle";
-import { banks, transactions } from "@/db/schema/finance";
 import formatMoney from "@/lib/money-utils";
+import { getTnxsByDate } from "@/lib/queries/finance";
 
 interface Props {
   day: Date;
@@ -14,27 +12,14 @@ export default async function DayTooltip({ day }: Props) {
   const dayStart = startOfDay(day);
   const dayEnd = addDays(dayStart, 1);
 
-  const rows = await db
-    .select({
-      transaction: transactions,
-      bank: banks,
-    })
-    .from(transactions)
-    .leftJoin(banks, eq(transactions.bankId, banks.id))
-    .where(
-      and(
-        gte(transactions.occurredAt, dayStart),
-        lt(transactions.occurredAt, dayEnd),
-      ),
-    )
-    .orderBy(transactions.occurredAt);
+  const rows = await getTnxsByDate(dayStart, dayEnd);
 
   let net = 0;
   let totalIncome = 0;
   let totalExpense = 0;
 
   for (const row of rows) {
-    const amount = parseFloat(row.transaction.amount);
+    const amount = parseFloat(row.transaction.totalAmount);
     if (row.transaction.type === "income") {
       totalIncome += amount;
       net += amount;
@@ -77,20 +62,20 @@ export default async function DayTooltip({ day }: Props) {
             )}
           >
             Net {net >= 0 ? "+" : ""}
-            {formatMoney(net)}
+            {formatMoney(net, { compact: false })}
           </span>
         </div>
         <div className="text-muted-foreground mt-0.5 flex items-center justify-between text-xs">
           <span>
             Income{" "}
             <span className="text-green-600 dark:text-green-400">
-              {formatMoney(totalIncome)}
+              {formatMoney(totalIncome, { compact: false })}
             </span>
           </span>
           <span>
             Expense{" "}
             <span className="text-red-600 dark:text-red-400">
-              -{formatMoney(totalExpense)}
+              -{formatMoney(totalExpense, { compact: false })}
             </span>
           </span>
         </div>
@@ -121,7 +106,7 @@ export default async function DayTooltip({ day }: Props) {
                 )}
               >
                 {row.transaction.type === "income" ? "+" : "-"}
-                {formatMoney(row.transaction.amount)}
+                {formatMoney(row.transaction.totalAmount, { compact: false })}
               </p>
               <p className="text-muted-foreground">
                 {format(row.transaction.occurredAt ?? "", "HH:mm")}
@@ -131,7 +116,9 @@ export default async function DayTooltip({ day }: Props) {
               <span>Balance after</span>
               <span>
                 {row.transaction.balanceAfter != null
-                  ? formatMoney(row.transaction.balanceAfter)
+                  ? formatMoney(row.transaction.balanceAfter, {
+                      compact: false,
+                    })
                   : "—"}
               </span>
             </div>

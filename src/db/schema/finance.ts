@@ -118,7 +118,7 @@ export const transactions = pgTable("transactions", {
   totalAmount: numeric("total_amount", { precision: 14, scale: 2 }).notNull(),
   balanceAfter: numeric("balance_after", { precision: 14, scale: 2 }),
   reference: text("reference"),
-  occurredAt: timestamp("occurred_at"),
+  occurredAt: timestamp("occurred_at", { withTimezone: true }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

@@ -25,7 +25,7 @@ export default function formatMoney(
   const formatted = compact
     ? new Intl.NumberFormat("en-US", {
         notation: "compact",
-        maximumFractionDigits: 1,
+        maximumFractionDigits: 2,
       }).format(value)
     : new Intl.NumberFormat("en-US", {
         minimumFractionDigits: hasFraction ? 2 : 0,

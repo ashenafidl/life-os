@@ -91,9 +91,10 @@ export const getBankBalances = cache(async () => {
 
 export const getDailyTotals = cache(
   async (from: Date, to: Date): Promise<Record<string, number>> => {
+    const serverTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const rows = await db
       .select({
-        day: sql<string>`to_char(${transactions.occurredAt}, 'YYYY-MM-DD')`,
+        day: sql<string>`to_char(${transactions.occurredAt} AT TIME ZONE ${serverTimeZone}, 'YYYY-MM-DD')`,
         net: sql<string>`sum(
         case when ${transactions.type} = 'income'
           then ${transactions.totalAmount}
@@ -529,3 +530,25 @@ export async function loadPeopleWithAliases(): Promise<PersonWithAliases[]> {
     aliases: person.aliases.map((alias) => alias.alias),
   }));
 }
+export const getTnxsByDate = cache(
+  async (dayStart: Date, dayEnd: Date) =>
+    await db
+      .select({
+        transaction: transactions,
+        bank: banks,
+      })
+      .from(transactions)
+      .leftJoin(banks, eq(transactions.bankId, banks.id))
+      .leftJoin(smsMessages, eq(transactions.smsMessageId, smsMessages.id))
+      .where(
+        and(
+          or(
+            eq(transactions.accountType, "cash"),
+            eq(smsMessages.status, "parsed"),
+          ),
+          gte(transactions.occurredAt, dayStart),
+          lt(transactions.occurredAt, dayEnd),
+        ),
+      )
+      .orderBy(transactions.occurredAt),
+);
