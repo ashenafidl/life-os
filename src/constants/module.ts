@@ -2,6 +2,7 @@ import {
   ArrowsLeftRightIcon,
   BankIcon,
   ClockCountdownIcon,
+  TagIcon,
   SquaresFourIcon,
   TrayIcon,
   UsersIcon,
@@ -40,6 +41,11 @@ export const navItems: Record<string, NavItem[]> = {
       href: "/finance/transactions" as Route,
     },
     { icon: UsersIcon, label: "Peoples", href: "/finance/peoples" as Route },
+    {
+      icon: TagIcon,
+      label: "Categories",
+      href: "/finance/categories" as Route,
+    },
     { icon: TrayIcon, label: "Inbox", href: "/finance/inbox" as Route },
   ],
   countdown: [

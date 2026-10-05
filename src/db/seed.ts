@@ -1,18 +1,32 @@
 // oxlint-disable no-console
+
 import "dotenv/config";
 import { bankData } from "@/constants/bank-data";
 import { db } from "@/db/drizzle";
 import { bankPatterns, banks, categories } from "@/db/schema/finance";
 
-// Icon values are Phosphor icon export names — resolve them to actual
-// components via a lookup map in the UI (icon: string -> Icon component),
-// since a React component can't be stored in Postgres.
-const defaultCategories = [
-  { name: "Salary", color: "#22C55E" },
-  { name: "Transfer", color: "#64748B" },
-  { name: "Transport", color: "#3B82F6" },
-  { name: "Airtime & Data", color: "#06B6D4" },
-  { name: "Gift", color: "#06B6D4" },
+const defaultCategories: Omit<typeof categories.$inferInsert, "isDefault">[] = [
+  {
+    name: "Salary",
+    description: "Pay and employment income",
+    type: "income",
+    color: "#22C55E",
+    icon: "CurrencyDollar",
+  },
+  {
+    name: "Transport",
+    description: "Public transport and rides",
+    type: "expense",
+    color: "#3B82F6",
+    icon: "Bus",
+  },
+  {
+    name: "Airtime & Data",
+    description: "Mobile airtime and data bundles",
+    type: "expense",
+    color: "#06B6D4",
+    icon: "DeviceMobile",
+  },
 ];
 
 async function seedBanksAndPatterns() {
@@ -57,8 +71,13 @@ async function seedCategories() {
       .insert(categories)
       .values({ ...category, isDefault: true })
       .onConflictDoUpdate({
-        target: categories.name,
-        set: { color: category.color, isDefault: true },
+        target: [categories.name, categories.type],
+        set: {
+          description: category.description,
+          color: category.color,
+          icon: category.icon,
+          isDefault: true,
+        },
       });
   }
 

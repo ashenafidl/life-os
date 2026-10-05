@@ -420,6 +420,21 @@ export const getCategories = cache(
   async () => await db.select().from(categories).orderBy(asc(categories.name)),
 );
 
+export const getCategoriesWithUsage = cache(async () =>
+  db
+    .select({
+      category: categories,
+      transactionCount: count(transactionCategories.transactionId),
+    })
+    .from(categories)
+    .leftJoin(
+      transactionCategories,
+      eq(categories.id, transactionCategories.categoryId),
+    )
+    .groupBy(categories.id)
+    .orderBy(asc(categories.type), asc(categories.name)),
+);
+
 export const getCashBalance = cache(async (): Promise<CashBalance> => {
   const [{ net, lastDate }] = await db
     .select({

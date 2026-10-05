@@ -1,3 +1,4 @@
+import phosphorPkg from "@phosphor-icons/react/package.json";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -6,6 +7,9 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["bonjour-service"],
   experimental: {
     optimizePackageImports: ["@phosphor-icons/react"],
+  },
+  env: {
+    NEXT_PUBLIC_PHOSPHOR_VERSION: phosphorPkg.version,
   },
 };
 

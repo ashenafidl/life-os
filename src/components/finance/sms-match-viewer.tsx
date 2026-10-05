@@ -9,6 +9,7 @@ import {
 import { useState, useTransition } from "react";
 
 import { updateTransactionCategories } from "@/actions/finance";
+import CategoryBadge from "@/components/finance/categories/category-badge";
 import FieldList from "@/components/finance/field-list";
 import HighlightedBody from "@/components/finance/highlighted-body";
 import PersonMatchField from "@/components/finance/person-match-field";
@@ -40,10 +41,13 @@ export default function SmsMatchViewer({ review, categories, peoples }: Props) {
   );
   const [_, startTransition] = useTransition();
 
-  const selectedCategories = categories.filter((category) =>
+  const compatibleCategories = categories.filter(
+    (category) => category.type === review.transaction.type,
+  );
+  const selectedCategories = compatibleCategories.filter((category) =>
     selectedCategoryIds.includes(category.id),
   );
-  const remainingCategories = categories.filter(
+  const remainingCategories = compatibleCategories.filter(
     (category) => !selectedCategoryIds.includes(category.id),
   );
 
@@ -111,11 +115,7 @@ export default function SmsMatchViewer({ review, categories, peoples }: Props) {
                   variant="outline"
                   className="rounded-full py-3 pr-0! pl-2"
                 >
-                  <span
-                    className="inline-block size-2 rounded-full"
-                    style={{ backgroundColor: category.color }}
-                  />
-                  <span>{category.name}</span>
+                  <CategoryBadge {...category} />
                   <Button
                     variant="ghost"
                     aria-label={`Remove ${category.name}`}
@@ -133,7 +133,11 @@ export default function SmsMatchViewer({ review, categories, peoples }: Props) {
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
-                  <Button variant="outline" size="xs">
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    disabled={remainingCategories.length === 0}
+                  >
                     <PlusIcon />
                     Add category
                   </Button>
@@ -147,11 +151,7 @@ export default function SmsMatchViewer({ review, categories, peoples }: Props) {
                       key={category.id}
                       onClick={() => handleAddCategory(category.id)}
                     >
-                      <span
-                        className="inline-block size-2 rounded-full"
-                        style={{ backgroundColor: category.color }}
-                      />
-                      <span>{category.name}</span>
+                      <CategoryBadge {...category} />
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuGroup>

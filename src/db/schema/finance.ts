@@ -122,13 +122,22 @@ export const transactions = pgTable("transactions", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const categories = pgTable("categories", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull().unique(),
-  color: text("color").notNull(), // hex string, e.g. "#22C55E"
-  isDefault: boolean("is_default").notNull().default(false),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export const categories = pgTable(
+  "categories",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    description: text("description"),
+    type: transactionTypeEnum("type").notNull().default("expense"),
+    color: text("color").notNull().default("#3B82F6"),
+    icon: text("icon").notNull().default("Tag"),
+    isDefault: boolean("is_default").notNull().default(false),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("categories_name_type_unique").on(table.name, table.type),
+  ],
+);
 
 export const transactionCategories = pgTable(
   "transaction_categories",

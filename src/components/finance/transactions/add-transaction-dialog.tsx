@@ -6,22 +6,22 @@ import { useHotkey } from "@tanstack/react-hotkeys";
 import { startOfDay } from "date-fns";
 import { useEffect, useState } from "react";
 
-import { createCashTransaction, listCategories } from "@/actions/finance";
+import { createCashTransaction, getCategories } from "@/actions/finance";
+import CategoryBadge from "@/components/finance/categories/category-badge";
 import AppDialog from "@/components/shared/app-dialog";
 import { FieldGroup } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { categories } from "@/db/schema/finance";
 import { useAppForm } from "@/hooks/use-form";
 import { cashTnxSchema } from "@/schemas/cash-transaction";
+import { Category } from "@/types/category";
 import { TransactionType } from "@/types/transaction-types";
 
 export default function AddTransactionDialog() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [category, setCategory] = useState<TransactionType>("expense");
   const [open, setOpen] = useState(false);
-  const [allCategories, setAllCategories] = useState<
-    (typeof categories.$inferSelect)[]
-  >([]);
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
 
   useHotkey("Q", () => setOpen(true), {
     meta: {
@@ -33,7 +33,7 @@ export default function AddTransactionDialog() {
 
   const form = useAppForm({
     defaultValues: {
-      amount: "0",
+      amount: "",
       occurredAt: new Date(),
       type: "expense" as TransactionType,
     },
@@ -53,6 +53,7 @@ export default function AddTransactionDialog() {
         setOpen(false);
         form.reset();
         setSelectedCategories([]);
+        setCategory("expense");
       }
     },
   });
@@ -64,7 +65,7 @@ export default function AddTransactionDialog() {
 
     let cancelled = false;
 
-    listCategories().then((nextCategories) => {
+    getCategories(category).then((nextCategories) => {
       if (!cancelled) {
         setAllCategories(nextCategories);
       }
@@ -73,7 +74,7 @@ export default function AddTransactionDialog() {
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [category, open]);
 
   return (
     <AppDialog
@@ -102,7 +103,10 @@ export default function AddTransactionDialog() {
                 value={[field.state.value]}
                 onValueChange={(groupValues) => {
                   if (groupValues[0]) {
-                    field.handleChange(groupValues[0] as TransactionType);
+                    const nextType = groupValues[0] as TransactionType;
+                    field.handleChange(nextType);
+                    setCategory(nextType);
+                    setSelectedCategories([]);
                   }
                 }}
               >
@@ -145,7 +149,7 @@ export default function AddTransactionDialog() {
             <Label>Category</Label>
             <ToggleGroup
               multiple
-              variant="default"
+              variant="outline"
               className="flex flex-wrap"
               onValueChange={(groupValue) => setSelectedCategories(groupValue)}
             >
@@ -155,11 +159,7 @@ export default function AddTransactionDialog() {
                   size="sm"
                   value={category.id}
                 >
-                  <span
-                    className="mr-1 size-2 rounded-full"
-                    style={{ backgroundColor: category.color }}
-                  />
-                  {category.name}
+                  <CategoryBadge {...category} />
                 </ToggleGroupItem>
               ))}
             </ToggleGroup>

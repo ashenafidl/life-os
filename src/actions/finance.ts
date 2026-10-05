@@ -1,6 +1,6 @@
 "use server";
 
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, count, eq, inArray, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db/drizzle";
@@ -18,6 +18,8 @@ import { counterpartyName } from "@/lib/name-matching";
 import { runAutoMatching } from "@/lib/peoples-matcher";
 import { parseMessages } from "@/lib/sms-parser";
 import { cashTnxSchema, type CashTnxInput } from "@/schemas/cash-transaction";
+import { categorySchema, CategoryInput } from "@/schemas/category";
+import { TransactionType } from "@/types/transaction-types";
 
 interface CashTransactionInput extends CashTnxInput {
   categoryIds: string[];
@@ -41,60 +43,56 @@ export async function parseAllMessages(scope: "all" | "unmatched") {
   return parseMessages(pendingMessages);
 }
 
-export async function createTransactionCategory(name: string) {
-  const trimmedName = name.trim();
-
-  if (!trimmedName) {
-    return null;
-  }
-
-  const [existingCategory] = await db
-    .select()
-    .from(categories)
-    .where(eq(categories.name, trimmedName))
-    .limit(1);
-
-  if (existingCategory) {
-    revalidatePath("/finance/transactions");
-    return existingCategory;
-  }
-
-  const [createdCategory] = await db
-    .insert(categories)
-    .values({
-      name: trimmedName,
-      color: "#6D28D9",
-      isDefault: false,
-    })
-    .returning();
-
-  revalidatePath("/finance/transactions");
-
-  return createdCategory;
-}
-
 export async function updateTransactionCategories(
   transactionId: string,
   categoryIds: string[],
-) {
-  const uniqueCategoryIds = [...new Set(categoryIds.filter(Boolean))];
+): Promise<ActionResult<{ transactionId: string }>> {
+  return runAction(async () => {
+    const uniqueCategoryIds = [...new Set(categoryIds.filter(Boolean))];
 
-  await db.transaction(async (tx) => {
-    await tx
-      .delete(transactionCategories)
-      .where(eq(transactionCategories.transactionId, transactionId));
+    await db.transaction(async (tx) => {
+      const [transaction] = await tx
+        .select({ type: transactions.type })
+        .from(transactions)
+        .where(eq(transactions.id, transactionId))
+        .limit(1);
 
-    if (uniqueCategoryIds.length > 0) {
-      await tx.insert(transactionCategories).values(
-        uniqueCategoryIds.map((categoryId) => ({
-          transactionId,
-          categoryId,
-        })),
-      );
-    }
+      if (uniqueCategoryIds.length > 0) {
+        const matchingCategories = await tx
+          .select({ id: categories.id, type: categories.type })
+          .from(categories)
+          .where(inArray(categories.id, uniqueCategoryIds));
+
+        if (matchingCategories.length !== uniqueCategoryIds.length) {
+          throw new ActionError("One or more categories no longer exist.");
+        }
+
+        if (
+          matchingCategories.some(
+            (category) => category.type !== transaction.type,
+          )
+        ) {
+          throw new ActionError("Categories must match the transaction type.");
+        }
+      }
+
+      await tx
+        .delete(transactionCategories)
+        .where(eq(transactionCategories.transactionId, transactionId));
+
+      if (uniqueCategoryIds.length > 0) {
+        await tx.insert(transactionCategories).values(
+          uniqueCategoryIds.map((categoryId) => ({
+            transactionId,
+            categoryId,
+          })),
+        );
+      }
+    });
+
+    revalidatePath("/finance/transactions");
+    return { transactionId };
   });
-
-  revalidatePath("/finance/transactions");
 }
 
 export async function createCashTransaction(
@@ -114,6 +112,22 @@ export async function createCashTransaction(
     }
 
     const { amount, occurredAt, type } = parsed.data;
+    const uniqueCategoryIds = [...new Set(data.categoryIds.filter(Boolean))];
+
+    if (uniqueCategoryIds.length > 0) {
+      const matchingCategories = await db
+        .select({ id: categories.id, type: categories.type })
+        .from(categories)
+        .where(inArray(categories.id, uniqueCategoryIds));
+
+      if (matchingCategories.length !== uniqueCategoryIds.length) {
+        throw new ActionError("One or more categories no longer exist.");
+      }
+
+      if (matchingCategories.some((category) => category.type !== type)) {
+        throw new ActionError("Categories must match the transaction type.");
+      }
+    }
 
     const [row] = await db
       .insert(transactions)
@@ -125,8 +139,6 @@ export async function createCashTransaction(
         occurredAt,
       })
       .returning({ id: transactions.id });
-
-    const uniqueCategoryIds = [...new Set(data.categoryIds.filter(Boolean))];
 
     if (uniqueCategoryIds.length > 0) {
       await db.insert(transactionCategories).values(
@@ -144,7 +156,145 @@ export async function createCashTransaction(
   });
 }
 
-export async function listCategories() {
+export async function createCategory(
+  data: CategoryInput,
+): Promise<ActionResult<{ id: string }>> {
+  return runAction(async () => {
+    const parsed = categorySchema.safeParse(data);
+    if (!parsed.success) {
+      throw new ActionError(
+        parsed.error.issues[0]?.message ?? "Invalid category.",
+      );
+    }
+
+    const [existing] = await db
+      .select({ id: categories.id })
+      .from(categories)
+      .where(
+        and(
+          eq(categories.name, parsed.data.name),
+          eq(categories.type, parsed.data.type),
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      throw new ActionError(
+        "A category with this name and type already exists.",
+      );
+    }
+
+    const [created] = await db
+      .insert(categories)
+      .values({ ...parsed.data, description: parsed.data.description })
+      .returning({ id: categories.id });
+
+    revalidatePath("/finance/categories");
+    revalidatePath("/finance/transactions");
+    return { id: created.id };
+  });
+}
+
+export async function updateCategory(
+  categoryId: string,
+  data: CategoryInput,
+): Promise<ActionResult<{ id: string }>> {
+  return runAction(async () => {
+    const parsed = categorySchema.safeParse(data);
+    if (!parsed.success) {
+      throw new ActionError(
+        parsed.error.issues[0]?.message ?? "Invalid category.",
+      );
+    }
+
+    const [existing] = await db
+      .select({ type: categories.type })
+      .from(categories)
+      .where(eq(categories.id, categoryId))
+      .limit(1);
+
+    if (!existing) {
+      throw new ActionError("Category not found.");
+    }
+
+    if (existing.type !== parsed.data.type) {
+      const [usage] = await db
+        .select({ count: count() })
+        .from(transactionCategories)
+        .where(eq(transactionCategories.categoryId, categoryId));
+
+      if (usage.count > 0) {
+        throw new ActionError(
+          "A category's type cannot change while transactions use it.",
+        );
+      }
+    }
+
+    const [duplicate] = await db
+      .select({ id: categories.id })
+      .from(categories)
+      .where(
+        and(
+          eq(categories.name, parsed.data.name),
+          eq(categories.type, parsed.data.type),
+          ne(categories.id, categoryId),
+        ),
+      )
+      .limit(1);
+
+    if (duplicate) {
+      throw new ActionError(
+        "A category with this name and type already exists.",
+      );
+    }
+
+    const [updated] = await db
+      .update(categories)
+      .set({ ...parsed.data, description: parsed.data.description || null })
+      .where(eq(categories.id, categoryId))
+      .returning({ id: categories.id });
+
+    revalidatePath("/finance/categories");
+    revalidatePath("/finance/transactions");
+    return { id: updated.id };
+  });
+}
+
+export async function deleteCategory(
+  categoryId: string,
+): Promise<ActionResult<{ deletedId: string }>> {
+  return runAction(async () => {
+    const [category] = await db
+      .select({ isDefault: categories.isDefault })
+      .from(categories)
+      .where(eq(categories.id, categoryId))
+      .limit(1);
+
+    if (!category) {
+      throw new ActionError("Category not found.");
+    }
+
+    if (category.isDefault) {
+      throw new ActionError("Default categories cannot be deleted.");
+    }
+
+    await db.delete(categories).where(eq(categories.id, categoryId));
+
+    revalidatePath("/finance/categories");
+    revalidatePath("/finance/transactions");
+    return { deletedId: categoryId };
+  });
+}
+
+export async function getCategories(type?: TransactionType) {
+  if (type) {
+    return db
+      .select()
+      .from(categories)
+      .where(eq(categories.type, type))
+      .orderBy(asc(categories.name));
+  }
+
   return db.select().from(categories).orderBy(asc(categories.name));
 }
 
