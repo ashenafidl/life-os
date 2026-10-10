@@ -23,7 +23,7 @@ export const bankData: SeedBank[] = [
     },
     patterns: [
       {
-        label: "Airtime top-up",
+        label: "Outgoing transaction",
         type: "expense",
         regex:
           "Dear\\s+(?<senderName>.+?)\\s+A debit transaction of ETB\\s+(?<amount>[\\d,]+\\.\\d+)\\..*?\\s+on your account\\s*(?<senderAccount>\\d+\\*{1,}\\d+)\\.\\s+service charge of ETB\\s*(?<serviceCharge>[\\d,]+\\.\\d+)\\s+and VAT\\([\\d,]+\\%\\) of.+?(?<vat>[\\d,]+.\\d+)\\s+and disaster recovery\\([\\d,]+\\%\\) of\\s*(?<disasterRecovery>[\\d,]+\\.\\d+)\\s+with total of ETB\\s*(?<totalAmount>[\\d,]+\\.\\d+).+?current balance is ETB\\s*(?<balanceAfter>[\\d,]+\\.\\d+)\\..*?(?<reference>https:\\/\\/\\S+)",
@@ -41,7 +41,7 @@ export const bankData: SeedBank[] = [
           "Dear\\s+(?<senderName>.+?)\\s+you\\s+have\\ssuccessfully\\s+transferred\\s+ETB\\s?(?<amount>[\\d,]+\\.\\d+)\\s+from\\s+account\\s+(?<senderAccount>\\d+\\*{1,}\\d+)\\s+to\\s+account\\s+(?<recipientAccount>\\d+\\*{1,}\\d+)\\s+\\((?<recipientName>.+?)\\).\\s+service\\s+charge\\s+of\\s+ETB\\s+(?<serviceCharge>[\\d,]+\\.\\d+)\\s+and\\s+VAT\\([\\d,]+\\%\\)\\s+of.+?(?<vat>[\\d,]+.\\d+)\\s+and\\s+disaster\\s+recovery\\([\\d,]+\\%\\)\\s+of\\s*(?<disasterRecovery>[\\d,]+\\.\\d+)\\s+with\\s+total\\s+of\\s+ETB\\s*(?<totalAmount>[\\d,]+\\.\\d+).+?current\\s+balance\\s+is\\s+ETB\\s*(?<balanceAfter>[\\d,]+\\.\\d+)\\..*?(?<reference>https:\\/\\/\\S+)",
       },
       {
-        label: "Salary",
+        label: "Incoming transaction",
         type: "income",
         regex:
           "Dear\\s+Mr\\s+(?<senderName>.+?)\\s+your\\s+account\\s+(?<senderAccount>\\d+\\*{1,}\\d+)\\s+has\\s+been\\s+credited\\s+with\\s+ETB\\s+(?<amount>[\\d,]+\\.\\d+).+current\\s+balance\\s+is\\s+ETB\\s+(?<balanceAfter>[\\d,]+\\.\\d+)\\..*?(?<reference>https:\\/\\/\\S+)",

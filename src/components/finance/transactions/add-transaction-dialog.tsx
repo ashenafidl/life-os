@@ -153,15 +153,17 @@ export default function AddTransactionDialog() {
               className="flex flex-wrap"
               onValueChange={(groupValue) => setSelectedCategories(groupValue)}
             >
-              {allCategories.map((category) => (
-                <ToggleGroupItem
-                  key={category.id}
-                  size="sm"
-                  value={category.id}
-                >
-                  <CategoryBadge {...category} />
-                </ToggleGroupItem>
-              ))}
+              {allCategories
+                .filter((category) => category.name !== "Self")
+                .map((category) => (
+                  <ToggleGroupItem
+                    key={category.id}
+                    size="sm"
+                    value={category.id}
+                  >
+                    <CategoryBadge {...category} />
+                  </ToggleGroupItem>
+                ))}
             </ToggleGroup>
           </div>
 

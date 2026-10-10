@@ -11,6 +11,7 @@ import {
 } from "@/db/schema/finance";
 import { extractMessageDatetime } from "@/lib/date-utils";
 import { autoMatchTransaction } from "@/lib/peoples-matcher";
+import { autoMatchSelfTransfer } from "@/lib/self-transfer-matcher";
 import { MatchedField } from "@/types/transaction-review";
 
 type SmsMessage = typeof smsMessages.$inferSelect;
@@ -637,6 +638,7 @@ export async function parseMessages(messages: SmsMessage[]) {
 
     if (transactionId) {
       await autoMatchTransaction(transactionId);
+      await autoMatchSelfTransfer(transactionId);
     }
   }
 

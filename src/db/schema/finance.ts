@@ -1,5 +1,7 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   integer,
   numeric,
   pgEnum,
@@ -26,6 +28,8 @@ export const transactionTypeEnum = pgEnum("transaction_type", [
 export const transactionLinkTypeEnum = pgEnum("transaction_link_type", [
   "refund",
   "cashback",
+  "self_transfer",
+  "cash_withdrawal",
 ]);
 
 export const accountTypeEnum = pgEnum("account_type", ["bank", "cash"]);
@@ -192,12 +196,9 @@ export const transactionPeople = pgTable(
   ],
 );
 
-// One-to-one link between a transaction and the original it relates to.
-// transactionId = the linking side (e.g. the refund itself).
-// linkedTransactionId = the transaction it links to (e.g. the original purchase).
-// Both columns are unique, so a given transaction can be on the "linking"
-// side of at most one link, and the "linked-to" side of at most one link —
-// enforces true 1:1 in both directions, per the current scope.
+// transactionId is the active side of a link (the refund, transfer out, or
+// bank withdrawal); linkedTransactionId is the related transaction. Self link
+// types additionally enforce exclusivity across both columns in a DB trigger.
 export const transactionLinks = pgTable(
   "transaction_links",
   {
@@ -214,6 +215,10 @@ export const transactionLinks = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [
+    check(
+      "transaction_links_no_self_link",
+      sql`${table.transactionId} <> ${table.linkedTransactionId}`,
+    ),
     uniqueIndex("no_self_link").on(
       table.transactionId,
       table.linkedTransactionId,

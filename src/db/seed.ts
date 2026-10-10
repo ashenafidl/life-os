@@ -2,32 +2,9 @@
 
 import "dotenv/config";
 import { bankData } from "@/constants/bank-data";
+import { DEFAULT_CATEGORIES } from "@/constants/default-categories";
 import { db } from "@/db/drizzle";
 import { bankPatterns, banks, categories } from "@/db/schema/finance";
-
-const defaultCategories: Omit<typeof categories.$inferInsert, "isDefault">[] = [
-  {
-    name: "Salary",
-    description: "Pay and employment income",
-    type: "income",
-    color: "#22C55E",
-    icon: "CurrencyDollar",
-  },
-  {
-    name: "Transport",
-    description: "Public transport and rides",
-    type: "expense",
-    color: "#3B82F6",
-    icon: "Bus",
-  },
-  {
-    name: "Airtime & Data",
-    description: "Mobile airtime and data bundles",
-    type: "expense",
-    color: "#06B6D4",
-    icon: "DeviceMobile",
-  },
-];
 
 async function seedBanksAndPatterns() {
   for (const item of bankData) {
@@ -66,7 +43,7 @@ async function seedBanksAndPatterns() {
 }
 
 async function seedCategories() {
-  for (const category of defaultCategories) {
+  for (const category of DEFAULT_CATEGORIES) {
     await db
       .insert(categories)
       .values({ ...category, isDefault: true })
@@ -81,7 +58,7 @@ async function seedCategories() {
       });
   }
 
-  console.log(`Seeded ${defaultCategories.length} default categories.`);
+  console.log(`Seeded ${DEFAULT_CATEGORIES.length} default categories.`);
 }
 
 function seed() {

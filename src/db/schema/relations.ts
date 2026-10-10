@@ -81,13 +81,12 @@ export const relations = defineRelations(
         from: r.transactions.id,
         to: r.transactionCategories.transactionId,
       }),
-      // The refund itself, if this transaction IS a refund pointing at another.
+      // The active side of a refund, self-transfer, or withdrawal link.
       outgoingLink: r.one.transactionLinks({
         from: r.transactions.id,
         to: r.transactionLinks.transactionId,
       }),
-      // The refund pointing back at this transaction, if this transaction
-      // is the ORIGINAL that got refunded.
+      // The transaction on the other side of a link pointing at this one.
       incomingLink: r.one.transactionLinks({
         from: r.transactions.id,
         to: r.transactionLinks.linkedTransactionId,

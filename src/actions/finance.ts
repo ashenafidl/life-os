@@ -1,6 +1,6 @@
 "use server";
 
-import { and, asc, count, eq, inArray, ne } from "drizzle-orm";
+import { and, asc, count, eq, inArray, ne, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db/drizzle";
@@ -10,6 +10,7 @@ import {
   personAliases,
   smsMessages,
   transactionCategories,
+  transactionLinks,
   transactionPeople,
   transactions,
 } from "@/db/schema/finance";
@@ -40,26 +41,62 @@ export async function parseAllMessages(scope: "all" | "unmatched") {
 
   revalidatePath("/finance/inbox");
 
-  return parseMessages(pendingMessages);
+  const result = await parseMessages(pendingMessages);
+  revalidatePath("/finance/transactions");
+  revalidatePath("/finance/dashboard");
+  return result;
 }
 
 export async function updateTransactionCategories(
   transactionId: string,
   categoryIds: string[],
-): Promise<ActionResult<{ transactionId: string }>> {
+): Promise<
+  ActionResult<{
+    transactionId: string;
+    requiresCashWithdrawalChoice: boolean;
+  }>
+> {
   return runAction(async () => {
     const uniqueCategoryIds = [...new Set(categoryIds.filter(Boolean))];
 
-    await db.transaction(async (tx) => {
+    const requiresCashWithdrawalChoice = await db.transaction(async (tx) => {
       const [transaction] = await tx
-        .select({ type: transactions.type })
+        .select()
         .from(transactions)
         .where(eq(transactions.id, transactionId))
         .limit(1);
 
+      if (!transaction) {
+        throw new ActionError("Transaction not found.");
+      }
+
+      if (!transaction.type) {
+        throw new ActionError("This transaction has no type.");
+      }
+
+      const currentCategoryRows = await tx
+        .select({ name: categories.name })
+        .from(transactionCategories)
+        .innerJoin(
+          categories,
+          eq(transactionCategories.categoryId, categories.id),
+        )
+        .where(eq(transactionCategories.transactionId, transactionId));
+      const previouslySelf = currentCategoryRows.some(
+        ({ name }) => name === "Self",
+      );
+
+      let categoriesToApply: Pick<
+        typeof categories.$inferSelect,
+        "id" | "name"
+      >[] = [];
       if (uniqueCategoryIds.length > 0) {
         const matchingCategories = await tx
-          .select({ id: categories.id, type: categories.type })
+          .select({
+            id: categories.id,
+            name: categories.name,
+            type: categories.type,
+          })
           .from(categories)
           .where(inArray(categories.id, uniqueCategoryIds));
 
@@ -74,24 +111,155 @@ export async function updateTransactionCategories(
         ) {
           throw new ActionError("Categories must match the transaction type.");
         }
+
+        const nonSelfCategories = matchingCategories.filter(
+          (category) => category.name !== "Self",
+        );
+        categoriesToApply =
+          nonSelfCategories.length > 0 ? nonSelfCategories : matchingCategories;
+      }
+
+      const applyingSelf = categoriesToApply.some(
+        (category) => category.name === "Self",
+      );
+      if (applyingSelf) {
+        const [otherLink] = await tx
+          .select({ type: transactionLinks.type })
+          .from(transactionLinks)
+          .where(
+            and(
+              or(
+                eq(transactionLinks.transactionId, transactionId),
+                eq(transactionLinks.linkedTransactionId, transactionId),
+              ),
+              ne(transactionLinks.type, "self_transfer"),
+              ne(transactionLinks.type, "cash_withdrawal"),
+            ),
+          )
+          .limit(1);
+
+        if (otherLink) {
+          throw new ActionError(
+            "A transaction with a refund or cashback link cannot be categorized as Self.",
+          );
+        }
       }
 
       await tx
         .delete(transactionCategories)
         .where(eq(transactionCategories.transactionId, transactionId));
 
-      if (uniqueCategoryIds.length > 0) {
+      if (categoriesToApply.length > 0) {
         await tx.insert(transactionCategories).values(
-          uniqueCategoryIds.map((categoryId) => ({
+          categoriesToApply.map(({ id: categoryId }) => ({
             transactionId,
             categoryId,
           })),
         );
       }
+
+      const appliedSelf = categoriesToApply.some(
+        (category) => category.name === "Self",
+      );
+
+      if (previouslySelf && !appliedSelf) {
+        const [selfLink] = await tx
+          .select()
+          .from(transactionLinks)
+          .where(
+            or(
+              eq(transactionLinks.transactionId, transactionId),
+              eq(transactionLinks.linkedTransactionId, transactionId),
+            ),
+          )
+          .limit(1);
+
+        if (
+          selfLink &&
+          (selfLink.type === "self_transfer" ||
+            selfLink.type === "cash_withdrawal")
+        ) {
+          const counterpartId =
+            selfLink.transactionId === transactionId
+              ? selfLink.linkedTransactionId
+              : selfLink.transactionId;
+          const [counterpart] = await tx
+            .select()
+            .from(transactions)
+            .where(eq(transactions.id, counterpartId))
+            .limit(1);
+
+          if (selfLink.type === "cash_withdrawal") {
+            if (
+              !counterpart ||
+              transaction.accountType === "cash" ||
+              counterpart.accountType !== "cash"
+            ) {
+              throw new ActionError(
+                "The linked cash withdrawal transaction is invalid.",
+              );
+            }
+
+            await tx
+              .delete(transactions)
+              .where(eq(transactions.id, counterpartId));
+          } else {
+            const counterpartSelfCategoryIds = await tx
+              .select({ id: categories.id })
+              .from(transactionCategories)
+              .innerJoin(
+                categories,
+                eq(transactionCategories.categoryId, categories.id),
+              )
+              .where(
+                and(
+                  eq(transactionCategories.transactionId, counterpartId),
+                  eq(categories.name, "Self"),
+                ),
+              );
+
+            if (counterpartSelfCategoryIds.length > 0) {
+              await tx.delete(transactionCategories).where(
+                and(
+                  eq(transactionCategories.transactionId, counterpartId),
+                  inArray(
+                    transactionCategories.categoryId,
+                    counterpartSelfCategoryIds.map(({ id }) => id),
+                  ),
+                ),
+              );
+            }
+          }
+
+          await tx
+            .delete(transactionLinks)
+            .where(eq(transactionLinks.id, selfLink.id));
+        }
+      }
+
+      const [activeLink] = await tx
+        .select({ id: transactionLinks.id })
+        .from(transactionLinks)
+        .where(
+          or(
+            eq(transactionLinks.transactionId, transactionId),
+            eq(transactionLinks.linkedTransactionId, transactionId),
+          ),
+        )
+        .limit(1);
+
+      return (
+        appliedSelf &&
+        !previouslySelf &&
+        transaction.accountType === "bank" &&
+        transaction.type === "expense" &&
+        !activeLink
+      );
     });
 
     revalidatePath("/finance/transactions");
-    return { transactionId };
+    revalidatePath("/finance/dashboard");
+    return { transactionId, requiresCashWithdrawalChoice };
   });
 }
 
@@ -114,45 +282,174 @@ export async function createCashTransaction(
     const { amount, occurredAt, type } = parsed.data;
     const uniqueCategoryIds = [...new Set(data.categoryIds.filter(Boolean))];
 
-    if (uniqueCategoryIds.length > 0) {
-      const matchingCategories = await db
-        .select({ id: categories.id, type: categories.type })
-        .from(categories)
-        .where(inArray(categories.id, uniqueCategoryIds));
+    const matchingCategories =
+      uniqueCategoryIds.length > 0
+        ? await db
+            .select({
+              id: categories.id,
+              name: categories.name,
+              type: categories.type,
+            })
+            .from(categories)
+            .where(inArray(categories.id, uniqueCategoryIds))
+        : [];
 
-      if (matchingCategories.length !== uniqueCategoryIds.length) {
-        throw new ActionError("One or more categories no longer exist.");
-      }
-
-      if (matchingCategories.some((category) => category.type !== type)) {
-        throw new ActionError("Categories must match the transaction type.");
-      }
+    if (matchingCategories.length !== uniqueCategoryIds.length) {
+      throw new ActionError("One or more categories no longer exist.");
     }
 
-    const [row] = await db
-      .insert(transactions)
-      .values({
-        accountType: "cash",
-        type,
-        amount,
-        totalAmount: amount,
-        occurredAt,
-      })
-      .returning({ id: transactions.id });
+    if (matchingCategories.some((category) => category.type !== type)) {
+      throw new ActionError("Categories must match the transaction type.");
+    }
 
-    if (uniqueCategoryIds.length > 0) {
-      await db.insert(transactionCategories).values(
-        uniqueCategoryIds.map((categoryId) => ({
-          transactionId: row.id,
-          categoryId,
-        })),
+    if (matchingCategories.some((category) => category.name === "Self")) {
+      throw new ActionError(
+        "Self is only available for linked transfers and withdrawals.",
       );
     }
+
+    const id = await db.transaction(async (tx) => {
+      const [row] = await tx
+        .insert(transactions)
+        .values({
+          accountType: "cash",
+          type,
+          amount,
+          totalAmount: amount,
+          occurredAt,
+        })
+        .returning({ id: transactions.id });
+
+      if (matchingCategories.length > 0) {
+        await tx.insert(transactionCategories).values(
+          matchingCategories.map(({ id: categoryId }) => ({
+            transactionId: row.id,
+            categoryId,
+          })),
+        );
+      }
+
+      return row.id;
+    });
 
     revalidatePath("/finance/dashboard");
     revalidatePath("/finance/transactions");
 
-    return { id: row.id };
+    return { id };
+  });
+}
+
+export async function createCashWithdrawal(
+  bankTransactionId: string,
+): Promise<ActionResult<{ cashTransactionId: string }>> {
+  return runAction(async () => {
+    const cashTransactionId = await db.transaction(async (tx) => {
+      const [bankTransaction] = await tx
+        .select()
+        .from(transactions)
+        .where(eq(transactions.id, bankTransactionId))
+        .limit(1);
+
+      if (
+        !bankTransaction ||
+        bankTransaction.accountType !== "bank" ||
+        bankTransaction.type !== "expense" ||
+        !bankTransaction.occurredAt ||
+        Number(bankTransaction.amount) <= 0
+      ) {
+        throw new ActionError("This is not a valid bank withdrawal.");
+      }
+
+      const [selfCategory] = await tx
+        .select({ id: categories.id })
+        .from(transactionCategories)
+        .innerJoin(
+          categories,
+          eq(transactionCategories.categoryId, categories.id),
+        )
+        .where(
+          and(
+            eq(transactionCategories.transactionId, bankTransactionId),
+            eq(categories.name, "Self"),
+          ),
+        )
+        .limit(1);
+      if (!selfCategory) {
+        throw new ActionError(
+          "Categorize this bank transaction as Self first.",
+        );
+      }
+
+      const [otherCategory] = await tx
+        .select({ id: categories.id })
+        .from(transactionCategories)
+        .innerJoin(
+          categories,
+          eq(transactionCategories.categoryId, categories.id),
+        )
+        .where(
+          and(
+            eq(transactionCategories.transactionId, bankTransactionId),
+            ne(categories.name, "Self"),
+          ),
+        )
+        .limit(1);
+      if (otherCategory) {
+        throw new ActionError(
+          "A Self transaction cannot have other categories.",
+        );
+      }
+
+      const [existingLink] = await tx
+        .select({ id: transactionLinks.id })
+        .from(transactionLinks)
+        .where(
+          or(
+            eq(transactionLinks.transactionId, bankTransactionId),
+            eq(transactionLinks.linkedTransactionId, bankTransactionId),
+          ),
+        )
+        .limit(1);
+      if (existingLink) {
+        throw new ActionError("This transaction is already linked.");
+      }
+
+      const [cashSelfCategory] = await tx
+        .select({ id: categories.id })
+        .from(categories)
+        .where(and(eq(categories.name, "Self"), eq(categories.type, "income")))
+        .limit(1);
+      if (!cashSelfCategory) {
+        throw new ActionError('The default income "Self" category is missing.');
+      }
+
+      const [cashTransaction] = await tx
+        .insert(transactions)
+        .values({
+          accountType: "cash",
+          type: "income",
+          amount: bankTransaction.amount,
+          totalAmount: bankTransaction.amount,
+          occurredAt: bankTransaction.occurredAt,
+        })
+        .returning({ id: transactions.id });
+
+      await tx.insert(transactionCategories).values({
+        transactionId: cashTransaction.id,
+        categoryId: cashSelfCategory.id,
+      });
+      await tx.insert(transactionLinks).values({
+        transactionId: bankTransaction.id,
+        linkedTransactionId: cashTransaction.id,
+        type: "cash_withdrawal",
+      });
+
+      return cashTransaction.id;
+    });
+
+    revalidatePath("/finance/dashboard");
+    revalidatePath("/finance/transactions");
+    return { cashTransactionId };
   });
 }
 
@@ -165,6 +462,10 @@ export async function createCategory(
       throw new ActionError(
         parsed.error.issues[0]?.message ?? "Invalid category.",
       );
+    }
+
+    if (parsed.data.name === "Self") {
+      throw new ActionError('"Self" is reserved for built-in categories.');
     }
 
     const [existing] = await db
@@ -208,13 +509,21 @@ export async function updateCategory(
     }
 
     const [existing] = await db
-      .select({ type: categories.type })
+      .select({ name: categories.name, type: categories.type })
       .from(categories)
       .where(eq(categories.id, categoryId))
       .limit(1);
 
     if (!existing) {
       throw new ActionError("Category not found.");
+    }
+
+    if (
+      parsed.data.name === "Self" ||
+      (existing.name === "Self" &&
+        (parsed.data.name !== "Self" || parsed.data.type !== existing.type))
+    ) {
+      throw new ActionError('The built-in "Self" category cannot be renamed.');
     }
 
     if (existing.type !== parsed.data.type) {
