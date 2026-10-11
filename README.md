@@ -1,5 +1,7 @@
 # LifeOS
 
+> Discontinued
+
 LifeOS is a personal productivity dashboard built with Next.js 16, React 19, Tailwind CSS v4, Drizzle ORM, and PostgreSQL. It combines finance tracking and countdown events features in a modular app shell.
 
 ## Features
